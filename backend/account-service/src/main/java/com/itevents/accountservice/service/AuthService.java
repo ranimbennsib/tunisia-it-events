@@ -1,12 +1,14 @@
 package com.itevents.accountservice.service;
 
 import com.itevents.accountservice.dto.AccountResponse;
+import com.itevents.accountservice.dto.LoginRequest;
 import com.itevents.accountservice.dto.RegisterOrganizerRequest;
 import com.itevents.accountservice.dto.RegisterUserRequest;
 import com.itevents.accountservice.entity.Account;
 import com.itevents.accountservice.entity.Organizer;
 import com.itevents.accountservice.entity.User;
 import com.itevents.accountservice.exception.DuplicateResourceException;
+import com.itevents.accountservice.exception.InvalidCredentialsException;
 import com.itevents.accountservice.repository.AccountRepository;
 import com.itevents.accountservice.repository.OrganizerRepository;
 import com.itevents.accountservice.repository.UserRepository;
@@ -75,4 +77,15 @@ public class AuthService {
     private String normalizeEmail(String email) {
         return email.trim().toLowerCase();
     }
+
+    @Transactional(readOnly = true)
+    public AccountResponse login(LoginRequest request) {
+        String email = normalizeEmail(request.email());
+        Account account = accountRepository.findByEmail(email).orElseThrow(() ->  new InvalidCredentialsException("Invalid email or password"));
+        if (!passwordEncoder.matches(request.password(), account.getPassword())) {
+            throw new InvalidCredentialsException( "Invalid email or password");
+        }
+        return AccountResponse.from(account);
+    }
+
 }
