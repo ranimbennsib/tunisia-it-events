@@ -19,7 +19,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 
-public class Account {
+public abstract class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -36,7 +36,7 @@ public class Account {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false, unique = true,length = 20)
+    @Column(nullable = false, unique = true,length = 8)
     private String phoneNumber;
 
     @Enumerated(EnumType.STRING)
