@@ -19,10 +19,10 @@ public class Organizer extends Account{
     @Column(nullable = false)
     private String organizationName;
 
-    @Column(nullable = false)
+    @Column(nullable = false , length = 1000)
     private String description;
 
-    @Column(nullable = false)
+
     private String Website;
 
     @Column(nullable = false)
