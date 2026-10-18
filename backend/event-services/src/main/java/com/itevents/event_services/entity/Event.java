@@ -37,9 +37,10 @@ public class Event {
     private int capacity;
 
     @Enumerated(EnumType.STRING)
-    private PaymentType paymentType;
+    private PaymentMode paymentMode;
 
-    private Double price;
+    private Double price;       // [0..1] : null si gratuit
+    private String currency;    // [0..1] : null si gratuit
     private String image;
 
     @Enumerated(EnumType.STRING)
@@ -48,11 +49,11 @@ public class Event {
     @Enumerated(EnumType.STRING)
     private EventStatus status;
 
-    private String rejectReason;
+    private String rejectReason;    // [0..1]
     private LocalDateTime createdAt;
 
-    private Long organizerId;   // id de l'organisateur (account-service)
-    private Long reviewedBy;    // id de l'administrateur
+    private Long organizerId;       // Organizer (account-service) : "organizes"
+    private Long reviewedBy;        // Administrator (account-service) : "reviews"
 
     @PrePersist
     void onCreate() {

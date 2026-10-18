@@ -1,7 +1,7 @@
 package com.itevents.event_services.dto;
 
 import com.itevents.event_services.entity.EventType;
-import com.itevents.event_services.entity.PaymentType;
+import com.itevents.event_services.entity.PaymentMode;
 import jakarta.validation.constraints.*;
 
 import java.time.LocalDateTime;
@@ -15,9 +15,9 @@ public record EventRequest(
         @NotBlank String city,
         String address,
         @Min(1) int capacity,
-        @NotNull PaymentType paymentType,
+        @NotNull PaymentMode paymentMode,
         @PositiveOrZero Double price,
+        String currency,
         String image,
-        @NotNull EventType eventType,
-        @NotNull Long organizerId
+        @NotNull EventType eventType
 ) {}

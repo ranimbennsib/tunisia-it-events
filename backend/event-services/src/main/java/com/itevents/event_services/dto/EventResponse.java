@@ -2,7 +2,7 @@ package com.itevents.event_services.dto;
 
 import com.itevents.event_services.entity.EventStatus;
 import com.itevents.event_services.entity.EventType;
-import com.itevents.event_services.entity.PaymentType;
+import com.itevents.event_services.entity.PaymentMode;
 
 import java.time.LocalDateTime;
 
@@ -16,8 +16,9 @@ public record EventResponse(
         String city,
         String address,
         int capacity,
-        PaymentType paymentType,
+        PaymentMode paymentMode,
         Double price,
+        String currency,
         String image,
         EventType eventType,
         EventStatus status,
