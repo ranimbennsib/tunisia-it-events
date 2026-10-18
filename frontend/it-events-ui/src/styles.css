@@ -1,1 +1,107 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  --bg: #f4f6fb;
+  --card: #ffffff;
+  --text: #1c2333;
+  --muted: #6b7385;
+  --border: #d9deea;
+  --accent: #2f5bea;
+  --accent-dark: #2447c0;
+  --danger: #c62828;
+  --success: #1b7f4b;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 32px 28px;
+  box-shadow: 0 8px 30px rgba(28, 35, 51, 0.06);
+}
+.auth-card.wide { max-width: 560px; }
+
+h1 { margin: 0 0 4px; font-size: 1.6rem; }
+.subtitle { margin: 0 0 20px; color: var(--muted); }
+
+form { display: flex; flex-direction: column; gap: 14px; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 520px) { .grid { grid-template-columns: 1fr; } }
+
+label { display: flex; flex-direction: column; gap: 6px; font-size: 0.875rem; font-weight: 500; }
+
+input, select, textarea {
+  font: inherit;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--text);
+}
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+  border-color: var(--accent);
+}
+textarea { resize: vertical; }
+
+.err { color: var(--danger); font-weight: 400; }
+
+.btn {
+  margin-top: 6px;
+  padding: 12px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn:hover:not(:disabled) { background: var(--accent-dark); }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 18px;
+  background: var(--bg);
+  border-radius: 10px;
+}
+.toggle button {
+  padding: 9px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  font: inherit;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+}
+.toggle button.active { background: #fff; color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+
+.alert { padding: 10px 12px; border-radius: 8px; margin-bottom: 14px; font-size: 0.9rem; }
+.alert.error { background: #fdecea; color: var(--danger); }
+.alert.success { background: #e7f6ee; color: var(--success); }
+
+.foot { margin: 18px 0 0; text-align: center; color: var(--muted); font-size: 0.9rem; }
+.foot a { color: var(--accent); font-weight: 500; }
