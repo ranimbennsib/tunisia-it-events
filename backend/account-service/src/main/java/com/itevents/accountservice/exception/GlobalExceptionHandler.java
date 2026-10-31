@@ -34,4 +34,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleInvalidCredentials(InvalidCredentialsException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiError.of(HttpStatus.UNAUTHORIZED, ex.getMessage(), Map.of()));
     }
+    @ExceptionHandler(AccountNotActiveException.class)
+    public ResponseEntity<ApiError> handleNotActive(AccountNotActiveException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ApiError.of(HttpStatus.FORBIDDEN, ex.getMessage(), Map.of()));
+    }
 }

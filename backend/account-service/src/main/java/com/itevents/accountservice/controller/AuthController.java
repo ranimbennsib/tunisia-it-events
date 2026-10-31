@@ -2,6 +2,7 @@ package com.itevents.accountservice.controller;
 
 import com.itevents.accountservice.dto.AccountResponse;
 import com.itevents.accountservice.dto.LoginRequest;
+import com.itevents.accountservice.dto.LoginResponse;
 import com.itevents.accountservice.dto.RegisterOrganizerRequest;
 import com.itevents.accountservice.dto.RegisterUserRequest;
 import com.itevents.accountservice.service.AuthService;
@@ -35,9 +36,8 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-
     @PostMapping("/login")
-    public ResponseEntity<AccountResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
 }

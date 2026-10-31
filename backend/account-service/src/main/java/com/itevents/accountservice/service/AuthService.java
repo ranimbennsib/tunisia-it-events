@@ -2,16 +2,20 @@ package com.itevents.accountservice.service;
 
 import com.itevents.accountservice.dto.AccountResponse;
 import com.itevents.accountservice.dto.LoginRequest;
+import com.itevents.accountservice.dto.LoginResponse;
 import com.itevents.accountservice.dto.RegisterOrganizerRequest;
 import com.itevents.accountservice.dto.RegisterUserRequest;
 import com.itevents.accountservice.entity.Account;
+import com.itevents.accountservice.entity.AccountStatus;
 import com.itevents.accountservice.entity.Organizer;
 import com.itevents.accountservice.entity.User;
+import com.itevents.accountservice.exception.AccountNotActiveException;
 import com.itevents.accountservice.exception.DuplicateResourceException;
 import com.itevents.accountservice.exception.InvalidCredentialsException;
 import com.itevents.accountservice.repository.AccountRepository;
 import com.itevents.accountservice.repository.OrganizerRepository;
 import com.itevents.accountservice.repository.UserRepository;
+import com.itevents.accountservice.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,6 +29,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final OrganizerRepository organizerRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     @Transactional
     public AccountResponse registerUser(RegisterUserRequest request) {
@@ -56,6 +61,27 @@ public class AuthService {
         return AccountResponse.from(organizerRepository.save(organizer));
     }
 
+    @Transactional(readOnly = true)
+    public LoginResponse login(LoginRequest request) {
+        String email = normalizeEmail(request.email());
+        Account account = accountRepository.findByEmail(email)
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
+
+        if (!passwordEncoder.matches(request.password(), account.getPassword())) {
+            throw new InvalidCredentialsException("Invalid email or password");
+        }
+        if (account.getAccountStatus() != AccountStatus.ACTIVE) {
+            throw new AccountNotActiveException("Account is not active");
+        }
+
+        return new LoginResponse(
+                jwtService.generateAccessToken(account),
+                jwtService.generateRefreshToken(account),
+                "Bearer",
+                AccountResponse.from(account)
+        );
+    }
+
     private void checkUnique(String email, String phoneNumber) {
         if (accountRepository.existsByEmail(email)) {
             throw new DuplicateResourceException("Email already in use");
@@ -77,15 +103,4 @@ public class AuthService {
     private String normalizeEmail(String email) {
         return email.trim().toLowerCase();
     }
-
-    @Transactional(readOnly = true)
-    public AccountResponse login(LoginRequest request) {
-        String email = normalizeEmail(request.email());
-        Account account = accountRepository.findByEmail(email).orElseThrow(() ->  new InvalidCredentialsException("Invalid email or password"));
-        if (!passwordEncoder.matches(request.password(), account.getPassword())) {
-            throw new InvalidCredentialsException( "Invalid email or password");
-        }
-        return AccountResponse.from(account);
-    }
-
 }
