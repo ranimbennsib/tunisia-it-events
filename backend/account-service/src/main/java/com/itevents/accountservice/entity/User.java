@@ -13,6 +13,11 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class User extends Account{
+    @Override
+    public Role getRole() {
+        return Role.USER;
+    }
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Occupation occupation = Occupation.Student;

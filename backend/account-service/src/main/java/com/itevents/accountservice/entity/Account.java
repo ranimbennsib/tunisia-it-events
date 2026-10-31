@@ -48,4 +48,6 @@ public abstract class Account {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
+    public abstract Role getRole();
+
 }

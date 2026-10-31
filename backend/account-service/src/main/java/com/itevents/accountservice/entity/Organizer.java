@@ -23,9 +23,13 @@ public class Organizer extends Account{
     private String description;
 
 
-    private String Website;
+    private String website;
 
     @Column(nullable = false)
     private String logo;
 
+    @Override
+    public Role getRole() {
+        return Role.ORGANIZER;
+    }
 }

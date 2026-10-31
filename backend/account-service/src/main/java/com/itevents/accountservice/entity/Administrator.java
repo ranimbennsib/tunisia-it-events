@@ -14,4 +14,8 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Administrator extends Account{
 
+    @Override
+    public Role getRole() {
+        return Role.ADMIN;
+    }
 }
