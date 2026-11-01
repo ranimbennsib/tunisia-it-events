@@ -19,7 +19,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.itevents.accountservice.dto.RefreshRequest;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -75,6 +77,34 @@ public class AuthService {
         if (!passwordEncoder.matches(request.password(), account.getPassword())) {
             throw new InvalidCredentialsException("Invalid email or password");
         }
+        if (account.getAccountStatus() != AccountStatus.ACTIVE) {
+            throw new AccountNotActiveException("Account is not active");
+        }
+
+        return new LoginResponse(
+                jwtService.generateAccessToken(account),
+                jwtService.generateRefreshToken(account),
+                "Bearer",
+                AccountResponse.from(account)
+        );
+    }
+    @Transactional(readOnly = true)
+    public LoginResponse refresh(RefreshRequest request) {
+        Claims claims;
+        try {
+            claims = jwtService.parse(request.refreshToken());
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new InvalidCredentialsException("Invalid refresh token");
+        }
+
+        if (!"refresh".equals(claims.get("type", String.class))) {
+            throw new InvalidCredentialsException("Invalid refresh token");
+        }
+
+        Long accountId = Long.valueOf(claims.getSubject());
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid refresh token"));
+
         if (account.getAccountStatus() != AccountStatus.ACTIVE) {
             throw new AccountNotActiveException("Account is not active");
         }
