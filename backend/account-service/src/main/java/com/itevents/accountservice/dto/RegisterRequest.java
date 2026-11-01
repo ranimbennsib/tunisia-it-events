@@ -1,13 +1,15 @@
 package com.itevents.accountservice.dto;
 
-import com.itevents.accountservice.entity.Occupation;
+import com.itevents.accountservice.entity.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-public record RegisterUserRequest(
+import java.util.Map;
+
+public record RegisterRequest(
 
         @NotBlank @Size(max = 100)
         String lastName,
@@ -25,8 +27,8 @@ public record RegisterUserRequest(
         String phoneNumber,
 
         @NotNull
-        Occupation occupation,
+        Role role,
 
-        @NotBlank
-        String institution
+        @NotNull
+        Map<String, Object> profile
 ) {}

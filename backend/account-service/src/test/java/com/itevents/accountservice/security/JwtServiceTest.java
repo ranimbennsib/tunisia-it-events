@@ -1,6 +1,5 @@
 package com.itevents.accountservice.security;
 
-import com.itevents.accountservice.entity.User;
 import io.jsonwebtoken.Claims;
 import org.junit.jupiter.api.Test;
 

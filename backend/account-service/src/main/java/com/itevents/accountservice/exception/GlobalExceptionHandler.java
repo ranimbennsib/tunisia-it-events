@@ -39,4 +39,20 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(ApiError.of(HttpStatus.FORBIDDEN, ex.getMessage(), Map.of()));
     }
+    @ExceptionHandler(ProfileRejectedException.class)
+    public ResponseEntity<ApiError> handleProfileRejected(ProfileRejectedException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiError.of(HttpStatus.BAD_REQUEST, ex.getMessage(), Map.of()));
+    }
+
+    @ExceptionHandler(ProfileServiceUnavailableException.class)
+    public ResponseEntity<ApiError> handleProfileUnavailable(ProfileServiceUnavailableException ex) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(ApiError.of(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage(), Map.of()));
+    }
+    @ExceptionHandler(InvalidRegistrationException.class)
+    public ResponseEntity<ApiError> handleInvalidRegistration(InvalidRegistrationException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiError.of(HttpStatus.BAD_REQUEST, ex.getMessage(), Map.of()));
+    }
 }

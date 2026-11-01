@@ -9,17 +9,14 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
 
-
-
 @Entity
-@Table(name="account")
-@Inheritance(strategy = InheritanceType.JOINED)
+@Table(name = "account")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+public class Account {
 
-public abstract class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -36,18 +33,18 @@ public abstract class Account {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false, unique = true,length = 8)
+    @Column(nullable = false, unique = true, length = 8)
     private String phoneNumber;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AccountStatus accountStatus = AccountStatus.ACTIVE;
 
-
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
-
-    public abstract Role getRole();
-
 }
