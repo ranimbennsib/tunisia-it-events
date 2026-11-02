@@ -6,6 +6,7 @@ import com.itevents.accountservice.dto.UpdateAccountRequest;
 import com.itevents.accountservice.entity.Account;
 import com.itevents.accountservice.exception.DuplicateResourceException;
 import com.itevents.accountservice.exception.InvalidPasswordException;
+import com.itevents.accountservice.exception.OperationNotAllowedException;
 import com.itevents.accountservice.exception.ResourceNotFoundException;
 import com.itevents.accountservice.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
@@ -71,6 +72,20 @@ public class AccountService {
         return PageResponse.from(
                 accountRepository.search(role, status, term, pageable),
                 AccountResponse::from);
+    }
+    @Transactional
+    public AccountResponse updateStatus(Long adminId, Long targetId, AccountStatus status) {
+        if (adminId.equals(targetId)) {
+            throw new OperationNotAllowedException("You cannot change the status of your own account");
+        }
+
+        Account target = findOrThrow(targetId);
+        if (target.getRole() == Role.ADMIN) {
+            throw new OperationNotAllowedException("The status of an admin account cannot be changed");
+        }
+
+        target.setAccountStatus(status);
+        return AccountResponse.from(accountRepository.save(target));
     }
     private Account findOrThrow(Long id) {
         return accountRepository.findById(id)

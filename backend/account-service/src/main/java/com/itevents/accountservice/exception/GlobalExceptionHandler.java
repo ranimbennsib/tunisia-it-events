@@ -65,4 +65,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ApiError.of(HttpStatus.BAD_REQUEST, ex.getMessage(), Map.of()));
     }
+    @ExceptionHandler(OperationNotAllowedException.class)
+    public ResponseEntity<ApiError> handleNotAllowed(OperationNotAllowedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ApiError.of(HttpStatus.FORBIDDEN, ex.getMessage(), Map.of()));
+    }
 }
