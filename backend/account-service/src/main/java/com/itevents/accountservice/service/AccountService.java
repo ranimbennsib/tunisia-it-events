@@ -12,7 +12,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.itevents.accountservice.dto.PageResponse;
+import com.itevents.accountservice.entity.AccountStatus;
+import com.itevents.accountservice.entity.Role;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 @Service
 @RequiredArgsConstructor
 public class AccountService {
@@ -55,7 +60,18 @@ public class AccountService {
         account.setPassword(passwordEncoder.encode(request.newPassword()));
         accountRepository.save(account);
     }
+    @Transactional(readOnly = true)
+    public PageResponse<AccountResponse> search(Role role, AccountStatus status,
+                                                String search, int page, int size) {
+        String term = search == null ? "" : search.trim();
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.min(Math.max(size, 1), 100);
+        Pageable pageable = PageRequest.of(safePage, safeSize, Sort.by("createdAt").descending());
 
+        return PageResponse.from(
+                accountRepository.search(role, status, term, pageable),
+                AccountResponse::from);
+    }
     private Account findOrThrow(Long id) {
         return accountRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
