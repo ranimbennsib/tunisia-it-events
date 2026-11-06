@@ -7,6 +7,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.itevents.profileservice.dto.UpdateProfileRequest;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/profiles")
@@ -20,5 +24,11 @@ public class ProfileController {
         // L'identité vient uniquement du JWT (principal = accountId), jamais de l'URL.
         Long accountId = (Long) authentication.getPrincipal();
         return profileService.get(accountId);
+    }
+    @PutMapping("/me")
+    public ProfileResponse updateMe(Authentication authentication,
+                                    @Valid @RequestBody UpdateProfileRequest request) {
+        Long accountId = (Long) authentication.getPrincipal();
+        return profileService.update(accountId, request);
     }
 }

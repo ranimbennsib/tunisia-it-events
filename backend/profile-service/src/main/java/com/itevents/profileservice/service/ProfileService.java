@@ -1,5 +1,6 @@
 package com.itevents.profileservice.service;
 
+import com.itevents.profileservice.dto.UpdateProfileRequest;
 import com.itevents.profileservice.dto.CreateProfileRequest;
 import com.itevents.profileservice.dto.ProfileResponse;
 import com.itevents.profileservice.dto.ProfileRole;
@@ -67,6 +68,40 @@ public class ProfileService {
 
         Profile saved = profileRepository.save(profile);
         return new CreationResult(toResponse(saved), true);
+    }
+    @Transactional
+    public ProfileResponse update(Long accountId, UpdateProfileRequest request) {
+        Profile profile = profileRepository.findById(accountId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profile not found"));
+
+        if (profile instanceof UserProfile user) {
+            if (request.organizationName() != null || request.description() != null
+                    || request.website() != null || request.logo() != null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Organizer fields are not allowed for a user profile");
+            }
+            user.setOccupation(request.occupation());
+            user.setInstitution(request.institution());
+        } else if (profile instanceof OrganizerProfile organizer) {
+            if (request.occupation() != null || request.institution() != null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "User fields are not allowed for an organizer profile");
+            }
+            if (request.organizationName() == null || request.organizationName().isBlank()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "organizationName is required for an organizer");
+            }
+            organizer.setOrganizationName(request.organizationName());
+            organizer.setDescription(request.description());
+            organizer.setWebsite(request.website());
+            organizer.setLogo(request.logo());
+            // commissionRate n'est jamais touché ici
+        } else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "An administrator profile has no editable field");
+        }
+
+        return toResponse(profileRepository.save(profile));
     }
 
     @Transactional(readOnly = true)
