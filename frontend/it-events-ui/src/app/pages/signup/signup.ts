@@ -21,7 +21,12 @@ export class Signup {
   errorMessage = signal('');
   fieldErrors = signal<Record<string, string>>({});
 
-  occupations: Occupation[] = ['Student', 'Employee', 'Freelancer', 'JobSeeker'];
+  occupations: { value: Occupation; label: string }[] = [
+    { value: 'student', label: 'Student' },
+    { value: 'employee', label: 'Employee' },
+    { value: 'freelancer', label: 'Freelancer' },
+    { value: 'jobSeeker', label: 'Job seeker' }
+  ];
 
   form = this.fb.nonNullable.group({
     lastName: ['', [Validators.required, Validators.maxLength(100)]],
@@ -30,7 +35,7 @@ export class Signup {
     password: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(64)]],
     phoneNumber: ['', [Validators.required, Validators.pattern(/^\d{8}$/)]],
     // participant only
-    occupation: ['Student' as Occupation],
+    occupation: ['student' as Occupation],
     institution: [''],
     // organizer only
     organizationName: [''],
@@ -99,18 +104,17 @@ export class Signup {
       phoneNumber: v.phoneNumber
     };
 
-    const request$ =
-      this.role() === 'user'
-        ? this.auth.registerUser({ ...common, occupation: v.occupation, institution: v.institution })
-        : this.auth.registerOrganizer({
-            ...common,
-            organizationName: v.organizationName,
-            description: v.description,
-            website: v.website || undefined,
-            logo: v.logo
-          });
+    const isUser = this.role() === 'user';
+    const profile = isUser
+      ? { occupation: v.occupation, institution: v.institution }
+      : {
+          organizationName: v.organizationName,
+          description: v.description,
+          website: v.website || undefined,
+          logo: v.logo
+        };
 
-    request$.subscribe({
+    this.auth.register({ ...common, role: isUser ? 'USER' : 'ORGANIZER', profile }).subscribe({
       next: () => {
         this.loading.set(false);
         this.router.navigate(['/login'], { queryParams: { registered: 'true' } });
