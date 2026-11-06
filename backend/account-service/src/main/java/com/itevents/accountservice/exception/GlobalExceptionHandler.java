@@ -34,4 +34,40 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleInvalidCredentials(InvalidCredentialsException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiError.of(HttpStatus.UNAUTHORIZED, ex.getMessage(), Map.of()));
     }
+    @ExceptionHandler(AccountNotActiveException.class)
+    public ResponseEntity<ApiError> handleNotActive(AccountNotActiveException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ApiError.of(HttpStatus.FORBIDDEN, ex.getMessage(), Map.of()));
+    }
+    @ExceptionHandler(ProfileRejectedException.class)
+    public ResponseEntity<ApiError> handleProfileRejected(ProfileRejectedException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiError.of(HttpStatus.BAD_REQUEST, ex.getMessage(), Map.of()));
+    }
+
+    @ExceptionHandler(ProfileServiceUnavailableException.class)
+    public ResponseEntity<ApiError> handleProfileUnavailable(ProfileServiceUnavailableException ex) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(ApiError.of(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage(), Map.of()));
+    }
+    @ExceptionHandler(InvalidRegistrationException.class)
+    public ResponseEntity<ApiError> handleInvalidRegistration(InvalidRegistrationException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiError.of(HttpStatus.BAD_REQUEST, ex.getMessage(), Map.of()));
+    }
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiError> handleNotFound(ResourceNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiError.of(HttpStatus.NOT_FOUND, ex.getMessage(), Map.of()));
+    }
+    @ExceptionHandler(InvalidPasswordException.class)
+    public ResponseEntity<ApiError> handleInvalidPassword(InvalidPasswordException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiError.of(HttpStatus.BAD_REQUEST, ex.getMessage(), Map.of()));
+    }
+    @ExceptionHandler(OperationNotAllowedException.class)
+    public ResponseEntity<ApiError> handleNotAllowed(OperationNotAllowedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ApiError.of(HttpStatus.FORBIDDEN, ex.getMessage(), Map.of()));
+    }
 }

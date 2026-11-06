@@ -1,59 +1,120 @@
 package com.itevents.accountservice.service;
 
+import com.itevents.accountservice.client.ProfileClient;
 import com.itevents.accountservice.dto.AccountResponse;
 import com.itevents.accountservice.dto.LoginRequest;
-import com.itevents.accountservice.dto.RegisterOrganizerRequest;
-import com.itevents.accountservice.dto.RegisterUserRequest;
+import com.itevents.accountservice.dto.LoginResponse;
+import com.itevents.accountservice.dto.RegisterRequest;
 import com.itevents.accountservice.entity.Account;
-import com.itevents.accountservice.entity.Organizer;
-import com.itevents.accountservice.entity.User;
+import com.itevents.accountservice.entity.AccountStatus;
+import com.itevents.accountservice.entity.Role;
+import com.itevents.accountservice.exception.AccountNotActiveException;
 import com.itevents.accountservice.exception.DuplicateResourceException;
 import com.itevents.accountservice.exception.InvalidCredentialsException;
+import com.itevents.accountservice.exception.InvalidRegistrationException;
 import com.itevents.accountservice.repository.AccountRepository;
-import com.itevents.accountservice.repository.OrganizerRepository;
-import com.itevents.accountservice.repository.UserRepository;
+import com.itevents.accountservice.security.JwtService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.itevents.accountservice.dto.RefreshRequest;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
     private final AccountRepository accountRepository;
-    private final UserRepository userRepository;
-    private final OrganizerRepository organizerRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+    private final ProfileClient profileClient;
 
-    @Transactional
-    public AccountResponse registerUser(RegisterUserRequest request) {
+    // Pas de @Transactional ici : on ne garde pas une transaction ouverte
+    // pendant un appel HTTP vers un autre service.
+    public AccountResponse register(RegisterRequest request) {
+        if (request.role() == Role.ADMIN) {
+            throw new InvalidRegistrationException("An admin account cannot be created by registration");
+        }
+
         String email = normalizeEmail(request.email());
         checkUnique(email, request.phoneNumber());
 
-        User user = new User();
-        fillCommonFields(user, request.lastName(), request.firstName(),
-                email, request.password(), request.phoneNumber());
-        user.setOccupation(request.occupation());
-        user.setInstitution(request.institution());
+        Account account = new Account();
+        account.setLastName(request.lastName());
+        account.setFirstName(request.firstName());
+        account.setEmail(email);
+        account.setPassword(passwordEncoder.encode(request.password()));
+        account.setPhoneNumber(request.phoneNumber());
+        account.setRole(request.role());
 
-        return AccountResponse.from(userRepository.save(user));
+        Account saved = accountRepository.save(account);
+
+        try {
+            profileClient.createProfile(saved.getId(), saved.getRole(), request.profile());
+        } catch (RuntimeException e) {
+            // compensation : pas de compte sans profil
+            accountRepository.deleteById(saved.getId());
+            try {
+                profileClient.deleteProfile(saved.getId());
+            } catch (RuntimeException ignored) {
+                log.warn("Could not delete profile of account {} during rollback", saved.getId());
+            }
+            throw e;
+        }
+
+        return AccountResponse.from(saved);
     }
 
-    @Transactional
-    public AccountResponse registerOrganizer(RegisterOrganizerRequest request) {
+    @Transactional(readOnly = true)
+    public LoginResponse login(LoginRequest request) {
         String email = normalizeEmail(request.email());
-        checkUnique(email, request.phoneNumber());
+        Account account = accountRepository.findByEmail(email)
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
 
-        Organizer organizer = new Organizer();
-        fillCommonFields(organizer, request.lastName(), request.firstName(),
-                email, request.password(), request.phoneNumber());
-        organizer.setOrganizationName(request.organizationName());
-        organizer.setDescription(request.description());
-        organizer.setWebsite(request.website());
-        organizer.setLogo(request.logo());
+        if (!passwordEncoder.matches(request.password(), account.getPassword())) {
+            throw new InvalidCredentialsException("Invalid email or password");
+        }
+        if (account.getAccountStatus() != AccountStatus.ACTIVE) {
+            throw new AccountNotActiveException("Account is not active");
+        }
 
-        return AccountResponse.from(organizerRepository.save(organizer));
+        return new LoginResponse(
+                jwtService.generateAccessToken(account),
+                jwtService.generateRefreshToken(account),
+                "Bearer",
+                AccountResponse.from(account)
+        );
+    }
+    @Transactional(readOnly = true)
+    public LoginResponse refresh(RefreshRequest request) {
+        Claims claims;
+        try {
+            claims = jwtService.parse(request.refreshToken());
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new InvalidCredentialsException("Invalid refresh token");
+        }
+
+        if (!"refresh".equals(claims.get("type", String.class))) {
+            throw new InvalidCredentialsException("Invalid refresh token");
+        }
+
+        Long accountId = Long.valueOf(claims.getSubject());
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid refresh token"));
+
+        if (account.getAccountStatus() != AccountStatus.ACTIVE) {
+            throw new AccountNotActiveException("Account is not active");
+        }
+
+        return new LoginResponse(
+                jwtService.generateAccessToken(account),
+                jwtService.generateRefreshToken(account),
+                "Bearer",
+                AccountResponse.from(account)
+        );
     }
 
     private void checkUnique(String email, String phoneNumber) {
@@ -65,27 +126,7 @@ public class AuthService {
         }
     }
 
-    private void fillCommonFields(Account account, String lastName, String firstName,
-                                  String email, String rawPassword, String phoneNumber) {
-        account.setLastName(lastName);
-        account.setFirstName(firstName);
-        account.setEmail(email);
-        account.setPassword(passwordEncoder.encode(rawPassword));
-        account.setPhoneNumber(phoneNumber);
-    }
-
     private String normalizeEmail(String email) {
         return email.trim().toLowerCase();
     }
-
-    @Transactional(readOnly = true)
-    public AccountResponse login(LoginRequest request) {
-        String email = normalizeEmail(request.email());
-        Account account = accountRepository.findByEmail(email).orElseThrow(() ->  new InvalidCredentialsException("Invalid email or password"));
-        if (!passwordEncoder.matches(request.password(), account.getPassword())) {
-            throw new InvalidCredentialsException( "Invalid email or password");
-        }
-        return AccountResponse.from(account);
-    }
-
 }

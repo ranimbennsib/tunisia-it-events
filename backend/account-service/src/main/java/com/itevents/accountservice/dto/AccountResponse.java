@@ -2,6 +2,7 @@ package com.itevents.accountservice.dto;
 
 import com.itevents.accountservice.entity.Account;
 import com.itevents.accountservice.entity.AccountStatus;
+import com.itevents.accountservice.entity.Role;
 
 import java.time.Instant;
 
@@ -11,6 +12,7 @@ public record AccountResponse(
         String firstName,
         String email,
         String phoneNumber,
+        Role role,
         AccountStatus accountStatus,
         Instant createdAt
 
@@ -22,6 +24,7 @@ public record AccountResponse(
                 account.getFirstName(),
                 account.getEmail(),
                 account.getPhoneNumber(),
+                account.getRole(),
                 account.getAccountStatus(),
                 account.getCreatedAt()
                 );
