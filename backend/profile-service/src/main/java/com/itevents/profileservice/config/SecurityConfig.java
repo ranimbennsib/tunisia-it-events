@@ -29,6 +29,7 @@ public class SecurityConfig {
                         // /internal/** is protected by InternalApiKeyFilter
                         .requestMatchers("/internal/**").permitAll()
                         // JWT-protected routes will be added in step 6
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(new InternalApiKeyFilter(internalApiKey), UsernamePasswordAuthenticationFilter.class);
         return http.build();
