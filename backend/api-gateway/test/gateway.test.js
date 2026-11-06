@@ -9,7 +9,8 @@ let upstream;
 let upstreamUrl;
 
 function token(role = 'USER', sub = '7', options = { expiresIn: '10m' }, secret = SECRET) {
-  return jwt.sign({ role }, secret, { algorithm: 'HS256', subject: sub, ...options });
+  const { type = 'access', algorithm = 'HS256', ...rest } = options;
+  return jwt.sign({ role, type }, secret, { algorithm, subject: sub, ...rest });
 }
 
 function makeApp(overrides = {}, services) {
@@ -80,6 +81,7 @@ describe('public routes', () => {
   });
 
   test.each([
+    '/api/auth/register',
     '/api/auth/signup',
     '/api/auth/signin',
     '/api/auth/login',
@@ -91,6 +93,45 @@ describe('public routes', () => {
     expect(res.status).toBe(200);
     expect(res.body.method).toBe('POST');
     expect(JSON.parse(res.body.body)).toEqual({ email: 'a@a.com', password: '12345678' });
+  });
+});
+
+describe('compatibility with the updated services', () => {
+  test.each(['HS256', 'HS384', 'HS512'])('token signed with %s is accepted', async (algorithm) => {
+    const res = await request(makeApp())
+      .get('/api/events/mine')
+      .set('Authorization', `Bearer ${token('ORGANIZER', '3', { expiresIn: '10m', algorithm })}`);
+    expect(res.status).toBe(200);
+  });
+
+  test('a refresh token cannot open a protected route', async () => {
+    const res = await request(makeApp())
+      .get('/api/events/mine')
+      .set('Authorization', `Bearer ${token('USER', '3', { expiresIn: '10m', type: 'refresh' })}`);
+    expect(res.status).toBe(401);
+  });
+
+  test('a token without "type" is refused', async () => {
+    const t = jwt.sign({ role: 'USER' }, SECRET, { algorithm: 'HS256', subject: '3', expiresIn: '10m' });
+    const res = await request(makeApp()).get('/api/events/mine').set('Authorization', `Bearer ${t}`);
+    expect(res.status).toBe(401);
+  });
+
+  test('/api/organizers/{id}/events goes to the event service (token required)', async () => {
+    const noToken = await request(makeApp()).get('/api/organizers/1/events');
+    expect(noToken.status).toBe(401);
+    const res = await request(makeApp())
+      .post('/api/organizers/1/events/5/publish')
+      .set('Authorization', `Bearer ${token('ORGANIZER', '1')}`);
+    expect(res.status).toBe(200);
+    expect(res.body.url).toBe('/api/organizers/1/events/5/publish');
+  });
+
+  test('/api/organizers/abc/events is not routed', async () => {
+    const res = await request(makeApp())
+      .get('/api/organizers/abc/events')
+      .set('Authorization', `Bearer ${token('ORGANIZER', '1')}`);
+    expect(res.status).toBe(404);
   });
 });
 
