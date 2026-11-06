@@ -1,17 +1,18 @@
 const { createProxyMiddleware } = require('http-proxy-middleware');
-const { routeTable, matchesPrefix } = require('./routes');
+const { routeTable, matchesRoute } = require('./routes');
 const { sendError } = require('./errors');
 
 // One proxy per service
 function createProxies(config) {
-  return routeTable.map(({ service, paths }) =>
-    createProxyMiddleware({
+  return routeTable.map((route) => {
+    const service = route.service;
+    return createProxyMiddleware({
       target: config.services[service],
       changeOrigin: true,
       xfwd: true,
       proxyTimeout: 15000,
       timeout: 15000,
-      pathFilter: (pathname) => matchesPrefix(pathname, paths),
+      pathFilter: (pathname) => matchesRoute(pathname, route),
       pathRewrite: config.stripApiPrefix ? { '^/api': '' } : undefined,
       on: {
         proxyReq: (proxyReq, req) => {
@@ -30,8 +31,8 @@ function createProxies(config) {
           sendError(req, res, status, message);
         }
       }
-    })
-  );
+    });
+  });
 }
 
 module.exports = createProxies;
