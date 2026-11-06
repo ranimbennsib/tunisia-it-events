@@ -4,45 +4,67 @@ import { Observable, tap } from 'rxjs';
 import {
   AccountResponse,
   LoginRequest,
-  RegisterOrganizerRequest,
-  RegisterUserRequest
+  LoginResponse,
+  RegisterRequest
 } from '../models/auth.models';
+
+const ACCOUNT_KEY = 'account';
+const ACCESS_KEY = 'accessToken';
+const REFRESH_KEY = 'refreshToken';
 
 @Injectable({ providedIn: 'root' })
 export class Auth {
   private http = inject(HttpClient);
   private baseUrl = '/api/auth';
 
-  currentAccount = signal<AccountResponse | null>(this.load());
+  currentAccount = signal<AccountResponse | null>(this.loadAccount());
 
-  registerUser(body: RegisterUserRequest): Observable<AccountResponse> {
-    return this.http.post<AccountResponse>(`${this.baseUrl}/register/user`, body);
+  register(body: RegisterRequest): Observable<AccountResponse> {
+    return this.http.post<AccountResponse>(`${this.baseUrl}/register`, body);
   }
 
-  registerOrganizer(body: RegisterOrganizerRequest): Observable<AccountResponse> {
-    return this.http.post<AccountResponse>(`${this.baseUrl}/register/organizer`, body);
-  }
-
-  login(body: LoginRequest): Observable<AccountResponse> {
-    return this.http.post<AccountResponse>(`${this.baseUrl}/login`, body).pipe(
-      tap(account => {
-        this.currentAccount.set(account);
-        try { localStorage.setItem('account', JSON.stringify(account)); } catch {}
+  login(body: LoginRequest): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.baseUrl}/login`, body).pipe(
+      tap(res => {
+        this.currentAccount.set(res.account);
+        this.write(ACCOUNT_KEY, JSON.stringify(res.account));
+        this.write(ACCESS_KEY, res.accessToken);
+        this.write(REFRESH_KEY, res.refreshToken);
       })
     );
   }
 
   logout(): void {
     this.currentAccount.set(null);
-    try { localStorage.removeItem('account'); } catch {}
+    [ACCOUNT_KEY, ACCESS_KEY, REFRESH_KEY].forEach(k => this.remove(k));
   }
 
-  private load(): AccountResponse | null {
+  getAccessToken(): string | null {
+    return this.read(ACCESS_KEY);
+  }
+
+  getRefreshToken(): string | null {
+    return this.read(REFRESH_KEY);
+  }
+
+  private loadAccount(): AccountResponse | null {
     try {
-      const raw = localStorage.getItem('account');
+      const raw = this.read(ACCOUNT_KEY);
       return raw ? (JSON.parse(raw) as AccountResponse) : null;
     } catch {
       return null;
     }
+  }
+
+  private read(key: string): string | null {
+    try { return localStorage.getItem(key); } catch { return null; }
+  }
+
+  private write(key: string, value: string): void {
+    try { localStorage.setItem(key, value); } catch {}
+  }
+
+  private remove(key: string): void {
+    try { localStorage.removeItem(key); } catch {}
   }
 }
