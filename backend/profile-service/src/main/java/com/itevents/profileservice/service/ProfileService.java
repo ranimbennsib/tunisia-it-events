@@ -76,6 +76,13 @@ public class ProfileService {
         return toResponse(profile);
     }
 
+    @Transactional
+    public void delete(Long accountId) {
+        if (profileRepository.existsById(accountId)) {
+            profileRepository.deleteById(accountId);
+        }
+    }
+
     private ProfileRole roleOf(Profile profile) {
         if (profile instanceof OrganizerProfile) return ProfileRole.ORGANIZER;
         if (profile instanceof AdministratorProfile) return ProfileRole.ADMINISTRATOR;
@@ -94,12 +101,5 @@ public class ProfileService {
         }
         return new ProfileResponse(profile.getAccountId(), ProfileRole.ADMINISTRATOR, null, null,
                 null, null, null, null, null, profile.getCreatedAt());
-    }
-
-    @Transactional
-    public void delete(Long accountId) {
-        if (profileRepository.existsById(accountId)) {
-            profileRepository.deleteById(accountId);
-        }
     }
 }
