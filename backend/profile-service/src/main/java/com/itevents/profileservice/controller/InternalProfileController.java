@@ -22,6 +22,11 @@ public class InternalProfileController {
         HttpStatus status = result.created() ? HttpStatus.CREATED : HttpStatus.OK;
         return ResponseEntity.status(status).body(result.profile());
     }
+    @DeleteMapping("/{accountId}")
+    public ResponseEntity<Void> delete(@PathVariable Long accountId) {
+        profileService.delete(accountId);
+        return ResponseEntity.noContent().build();
+    }
 
     @GetMapping("/{accountId}")
     public ProfileResponse get(@PathVariable Long accountId) {

@@ -13,6 +13,7 @@ public record CreateProfileRequest(
         // ORGANIZER
         @Size(max = 150) String organizationName,
         @Size(max = 2000) String description,
-        @Size(max = 255) String website
+        @Size(max = 255) String website,
+        @Size(max = 500) String logo
 ) {
 }

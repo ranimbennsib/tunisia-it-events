@@ -57,6 +57,7 @@ public class ProfileService {
                 organizer.setOrganizationName(request.organizationName());
                 organizer.setDescription(request.description());
                 organizer.setWebsite(request.website());
+                organizer.setLogo(request.logo());
                 organizer.setCommissionRate(defaultCommissionRate);
                 yield organizer;
             }
@@ -93,5 +94,12 @@ public class ProfileService {
         }
         return new ProfileResponse(profile.getAccountId(), ProfileRole.ADMINISTRATOR, null, null,
                 null, null, null, null, null, profile.getCreatedAt());
+    }
+
+    @Transactional
+    public void delete(Long accountId) {
+        if (profileRepository.existsById(accountId)) {
+            profileRepository.deleteById(accountId);
+        }
     }
 }
