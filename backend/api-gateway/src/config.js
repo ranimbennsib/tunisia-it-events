@@ -22,6 +22,11 @@ function buildConfig(env = process.env) {
       .map((o) => o.trim())
       .filter(Boolean),
     stripApiPrefix: toBool(env.STRIP_API_PREFIX, false),
+        // services that expect URLs WITHOUT "/api" (example: STRIP_API_PREFIX_SERVICES=profile)
+    stripApiPrefixServices: (env.STRIP_API_PREFIX_SERVICES || '')
+      .split(',')
+      .map((n) => n.trim().toLowerCase())
+      .filter(Boolean),
     rateLimit: {
       authWindowMs: toInt(env.AUTH_RATE_WINDOW_MS, 15 * 60 * 1000),
       authMax: toInt(env.AUTH_RATE_MAX, 10),

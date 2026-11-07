@@ -320,6 +320,14 @@ describe('routing', () => {
     }
     await Promise.all(Object.values(servers).map((s) => new Promise((r) => s.close(r))));
   });
+    test('STRIP_API_PREFIX_SERVICES removes /api only for the listed services', async () => {
+    const app = makeApp({ STRIP_API_PREFIX_SERVICES: 'profile' });
+    const auth = { Authorization: `Bearer ${token('USER')}` };
+    const profile = await request(app).get('/api/profiles/me').set(auth);
+    expect(profile.body.url).toBe('/profiles/me');
+    const account = await request(app).get('/api/accounts/me').set(auth);
+    expect(account.body.url).toBe('/api/accounts/me');
+  });
 
   test('STRIP_API_PREFIX=true removes /api before forwarding', async () => {
     const res = await request(makeApp({ STRIP_API_PREFIX: 'true' })).get('/api/events/5');
