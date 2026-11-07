@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Auth } from '../../services/auth';
 import { ApiError } from '../../models/auth.models';
 
@@ -14,6 +14,7 @@ import { ApiError } from '../../models/auth.models';
 export class Login {
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   protected auth = inject(Auth);
 
   justRegistered = this.route.snapshot.queryParamMap.get('registered') === 'true';
@@ -34,7 +35,10 @@ export class Login {
     this.errorMessage.set('');
 
     this.auth.login(this.form.getRawValue()).subscribe({
-      next: () => this.loading.set(false),
+      next: () => {
+        this.loading.set(false);
+        this.router.navigateByUrl(this.auth.homeRoute());
+      },
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);
         const api = err.error as Partial<ApiError> | null;

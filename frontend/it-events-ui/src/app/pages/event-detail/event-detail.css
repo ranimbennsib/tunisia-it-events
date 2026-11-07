@@ -1,0 +1,6 @@
+:host { display:block; max-width:720px; margin:0 auto; padding:24px; }
+.back { text-decoration:none; color:#2563eb; }
+.tag { font-size:12px; color:#2563eb; font-weight:600; }
+.meta { color:#4b5563; margin:4px 0; }
+.price { font-weight:600; margin:12px 0; }
+.error { color:#b91c1c; }

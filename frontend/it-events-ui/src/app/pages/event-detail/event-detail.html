@@ -1,0 +1,19 @@
+<a routerLink="/events" class="back">← All events</a>
+
+@if (loading()) {
+  <p>Loading...</p>
+} @else if (error()) {
+  <p class="error">{{ error() }}</p>
+} @else if (event(); as e) {
+  <article>
+    <span class="tag">{{ e.eventType }} · {{ e.domain }}</span>
+    <h1>{{ e.title }}</h1>
+    <p class="meta">
+      {{ e.startDate | date: 'EEEE d MMMM y, HH:mm' }} to {{ e.endDate | date: 'HH:mm' }}
+    </p>
+    <p class="meta">{{ e.city }} · {{ e.address }}</p>
+    <p class="meta">Capacity: {{ e.capacity }}</p>
+    <p class="price">{{ e.paymentMode === 'FREE' ? 'Free' : e.price + ' ' + e.currency }}</p>
+    <p>{{ e.description }}</p>
+  </article>
+}

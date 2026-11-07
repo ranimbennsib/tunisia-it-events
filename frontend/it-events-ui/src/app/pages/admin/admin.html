@@ -1,0 +1,44 @@
+<header class="bar">
+  <h1>Admin: event moderation</h1>
+  <nav>
+    <a routerLink="/events">Public site</a>
+    <button type="button" (click)="auth.logout()" routerLink="/login">Log out</button>
+  </nav>
+</header>
+
+<main>
+  <div class="tabs">
+    @for (s of ['PENDING', 'APPROVED', 'REJECTED']; track s) {
+      <button type="button" [class.active]="filter() === s" (click)="filter.set($any(s))">
+        {{ s }} ({{ count($any(s)) }})
+      </button>
+    }
+  </div>
+
+  @if (error()) { <p class="error">{{ error() }}</p> }
+
+  @if (loading()) {
+    <p>Loading...</p>
+  } @else if (shown().length === 0) {
+    <p>No {{ filter().toLowerCase() }} events.</p>
+  } @else {
+    @for (e of shown(); track e.id) {
+      <article class="item">
+        <div>
+          <h3>{{ e.title }}</h3>
+          <p>{{ e.eventType }} · {{ e.domain }} · {{ e.city }}</p>
+          <p>{{ e.startDate | date: 'EEE d MMM y, HH:mm' }} · capacity {{ e.capacity }}</p>
+          <p>Organizer id: {{ e.organizerId }}</p>
+          <p>{{ e.description }}</p>
+          @if (e.rejectReason) { <p class="reason">Reason: {{ e.rejectReason }}</p> }
+        </div>
+        @if (e.status === 'PENDING') {
+          <div class="actions">
+            <button type="button" class="primary" (click)="approve(e)">Approve</button>
+            <button type="button" class="danger" (click)="reject(e)">Reject</button>
+          </div>
+        }
+      </article>
+    }
+  }
+</main>

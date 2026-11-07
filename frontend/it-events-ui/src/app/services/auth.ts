@@ -67,4 +67,24 @@ export class Auth {
   private remove(key: string): void {
     try { localStorage.removeItem(key); } catch {}
   }
+
+  // in auth.ts
+refresh(): Observable<LoginResponse> {
+  return this.http
+    .post<LoginResponse>(`${this.baseUrl}/refresh`, { refreshToken: this.getRefreshToken() })
+    .pipe(
+      tap(res => {
+        this.write(ACCESS_KEY, res.accessToken);
+        if (res.refreshToken) this.write(REFRESH_KEY, res.refreshToken);
+      })
+    );
+}
+
+homeRoute(): string {
+  switch (this.currentAccount()?.role) {
+    case 'ADMIN': return '/admin';
+    case 'ORGANIZER': return '/organizer';
+    default: return '/events';
+  }
+}
 }

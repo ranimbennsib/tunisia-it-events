@@ -1,0 +1,13 @@
+.bar { display:flex; justify-content:space-between; align-items:center; padding:16px 24px; border-bottom:1px solid #e5e7eb; }
+.bar nav { display:flex; gap:12px; align-items:center; }
+.filters { display:flex; flex-wrap:wrap; gap:8px; padding:16px 24px; }
+.filters input, .filters select { padding:8px 10px; border:1px solid #d1d5db; border-radius:8px; }
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; padding:0 24px 24px; }
+.card { display:block; padding:16px; border:1px solid #e5e7eb; border-radius:12px; text-decoration:none; color:inherit; }
+.card:hover { box-shadow:0 4px 12px rgba(0,0,0,.08); }
+.card h2 { margin:8px 0; font-size:18px; }
+.card p { margin:4px 0; color:#4b5563; }
+.tag { font-size:12px; color:#2563eb; font-weight:600; }
+.price { font-weight:600; color:#111827; }
+.msg { padding:24px; }
+.error { color:#b91c1c; }
