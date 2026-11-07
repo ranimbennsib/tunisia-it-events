@@ -6,6 +6,8 @@ const { sendError } = require('./errors');
 function createProxies(config) {
   return routeTable.map((route) => {
     const service = route.service;
+        // "/api" is removed for all services (STRIP_API_PREFIX) or only for some of them
+    const strip = config.stripApiPrefix || (config.stripApiPrefixServices || []).includes(service);
     return createProxyMiddleware({
       target: config.services[service],
       changeOrigin: true,
@@ -13,7 +15,7 @@ function createProxies(config) {
       proxyTimeout: 15000,
       timeout: 15000,
       pathFilter: (pathname) => matchesRoute(pathname, route),
-      pathRewrite: config.stripApiPrefix ? { '^/api': '' } : undefined,
+      pathRewrite: strip ? { '^/api': '' } : undefined,
       on: {
         proxyReq: (proxyReq, req) => {
           // a client must never be able to fake an internal call
