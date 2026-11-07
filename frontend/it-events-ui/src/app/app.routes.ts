@@ -15,6 +15,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/organizer/organizer').then(m => m.Organizer)
   },
   {
+  path: 'profile',
+  canActivate: [roleGuard()],
+  loadComponent: () => import('./pages/profile/profile').then(m => m.Profile)
+  },
+  {
     path: 'admin',
     canActivate: [roleGuard('ADMIN')],
     loadComponent: () => import('./pages/admin/admin').then(m => m.Admin)

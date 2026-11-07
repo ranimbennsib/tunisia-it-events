@@ -1,0 +1,67 @@
+<header class="bar">
+  <h1>My profile</h1>
+  <nav>
+    <a routerLink="/events">Public site</a>
+    <a [routerLink]="auth.homeRoute()">My space</a>
+    <button type="button" (click)="auth.logout()" routerLink="/login">Log out</button>
+  </nav>
+</header>
+
+<main>
+  <form [formGroup]="accountForm" (ngSubmit)="saveAccount()" class="card">
+    <h2>Account</h2>
+    <p class="muted">{{ auth.currentAccount()?.email }} · {{ auth.currentAccount()?.role }}</p>
+    <div class="row">
+      <label>Last name <input formControlName="lastName" /></label>
+      <label>First name <input formControlName="firstName" /></label>
+    </div>
+    <label>Phone (8 digits) <input formControlName="phoneNumber" inputmode="numeric" /></label>
+    @if (accountForm.controls.phoneNumber.touched && accountForm.controls.phoneNumber.invalid) {
+      <p class="error">The phone number must have exactly 8 digits.</p>
+    }
+    @if (accountErr()) { <p class="error">{{ accountErr() }}</p> }
+    @if (accountMsg()) { <p class="ok">{{ accountMsg() }}</p> }
+    <button type="submit" class="primary">Save account</button>
+  </form>
+
+  @if (isUser || isOrganizer) {
+    <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="card">
+      <h2>{{ isOrganizer ? 'Organization' : 'Participant' }} profile</h2>
+
+      @if (loading()) {
+        <p>Loading...</p>
+      } @else {
+        @if (isUser) {
+          <label>Occupation
+            <select formControlName="occupation">
+              @for (o of occupations; track o) { <option [value]="o">{{ o }}</option> }
+            </select>
+          </label>
+          <label>Institution <input formControlName="institution" /></label>
+        } @else {
+          <label>Organization name <input formControlName="organizationName" /></label>
+          <label>Description <textarea rows="4" formControlName="description"></textarea></label>
+          <div class="row">
+            <label>Website <input formControlName="website" placeholder="https://" /></label>
+            <label>Logo URL (max 500 characters) <input formControlName="logo" /></label>
+          </div>
+          @if (commissionRate() !== null) {
+            <p class="muted">Commission rate: {{ commissionRate()! * 100 }}% (set by the platform)</p>
+          }
+        }
+        @if (profileErr()) { <p class="error">{{ profileErr() }}</p> }
+        @if (profileMsg()) { <p class="ok">{{ profileMsg() }}</p> }
+        <button type="submit" class="primary">Save profile</button>
+      }
+    </form>
+  }
+
+  <form [formGroup]="passwordForm" (ngSubmit)="savePassword()" class="card">
+    <h2>Change password</h2>
+    <label>Current password <input type="password" formControlName="currentPassword" autocomplete="current-password" /></label>
+    <label>New password (8 to 64 characters) <input type="password" formControlName="newPassword" autocomplete="new-password" /></label>
+    @if (passwordErr()) { <p class="error">{{ passwordErr() }}</p> }
+    @if (passwordMsg()) { <p class="ok">{{ passwordMsg() }}</p> }
+    <button type="submit" class="primary">Change password</button>
+  </form>
+</main>

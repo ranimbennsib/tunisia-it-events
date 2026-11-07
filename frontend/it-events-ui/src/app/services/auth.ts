@@ -87,4 +87,13 @@ homeRoute(): string {
     default: return '/events';
   }
 }
+
+updateStoredAccount(patch: Partial<AccountResponse>): void {
+  const current = this.currentAccount();
+  if (!current) return;
+  const next = { ...current, ...patch };
+  this.currentAccount.set(next);
+  this.write(ACCOUNT_KEY, JSON.stringify(next));
+}
+
 }
