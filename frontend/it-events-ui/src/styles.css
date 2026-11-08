@@ -8,7 +8,20 @@
   --accent-dark: #2447c0;
   --danger: #c62828;
   --success: #1b7f4b;
+  /* ===== Shared theme: same tokens and rocket cursor as login / signup / events / profile ===== */
+
+  --purple-900: #2a1060;
+  --purple-700: #5b2a9e;
+  --purple-500: #8a4fd6;
+  --lilac: #e9ddff;
+  --lilac-2: #d9c8f7;
+  --ink: #2b2140;
+
+  /* rocket cursor: the tip of the nose (6 6) is the click point */
+  --cursor-rocket: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><g transform='translate(16 16) rotate(-45) scale(.15) translate(-50 -106)' stroke-linejoin='round'><path d='M40 154Q50 212 60 154Z' fill='%23ff9a3c'/><path d='M45 154Q50 188 55 154Z' fill='%23ffe08a'/><path d='M33 104C18 118 9 138 7 160L37 142Z' fill='%23ff5e9c' stroke='%232a1060' stroke-width='7'/><path d='M67 104C82 118 91 138 93 160L63 142Z' fill='%23ff5e9c' stroke='%232a1060' stroke-width='7'/><path d='M50 6C78 38 80 96 70 148L30 148C20 96 22 38 50 6Z' fill='%23fff' stroke='%232a1060' stroke-width='7'/><path d='M50 6C61 19 68 32 70 48L30 48C32 32 39 19 50 6Z' fill='%238a4fd6'/><circle cx='50' cy='84' r='14' fill='%232a1060' stroke='%23d9c8f7' stroke-width='5'/></g></svg>") 6 6, auto;
+  --cursor-rocket-go: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><g transform='translate(16 16) rotate(-45) scale(.15) translate(-50 -106)' stroke-linejoin='round'><path d='M38 154Q50 236 62 154Z' fill='%23ff9a3c'/><path d='M44 154Q50 200 56 154Z' fill='%23ffe08a'/><path d='M33 104C18 118 9 138 7 160L37 142Z' fill='%23ff5e9c' stroke='%232a1060' stroke-width='7'/><path d='M67 104C82 118 91 138 93 160L63 142Z' fill='%23ff5e9c' stroke='%232a1060' stroke-width='7'/><path d='M50 6C78 38 80 96 70 148L30 148C20 96 22 38 50 6Z' fill='%23fff' stroke='%232a1060' stroke-width='7'/><path d='M50 6C61 19 68 32 70 48L30 48C32 32 39 19 50 6Z' fill='%238a4fd6'/><circle cx='50' cy='84' r='14' fill='%232a1060' stroke='%23d9c8f7' stroke-width='5'/></g></svg>") 6 6, pointer;
 }
+
 
 * { box-sizing: border-box; }
 
