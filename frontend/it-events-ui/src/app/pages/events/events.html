@@ -1,65 +1,86 @@
-<header class="bar">
-  <h1>Tunisia IT Events</h1>
-  <nav>
-    @if (auth.currentAccount(); as acc) {
-      <span>{{ acc.firstName }}</span>
-      <a [routerLink]="auth.homeRoute()">My space</a>
-      <button type="button" (click)="auth.logout()">Log out</button>
-    } @else {
-      <a routerLink="/login">Log in</a>
-      <a routerLink="/signup">Sign up</a>
-    }
-  </nav>
-</header>
+<div class="page">
+  <header class="bar">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 100 200" aria-hidden="true">
+        <path d="M40 154 Q50 214 60 154 Z" fill="#ff9a3c" />
+        <path d="M45 154 Q50 190 55 154 Z" fill="#ffe08a" />
+        <path d="M33 104 C18 118 9 138 7 160 L37 142 Z" fill="#ff5e9c" />
+        <path d="M67 104 C82 118 91 138 93 160 L63 142 Z" fill="#ff5e9c" />
+        <path d="M36 148 L64 148 L60 157 L40 157 Z" fill="#4a2a8a" />
+        <path d="M50 6 C78 38 80 96 70 148 L30 148 C20 96 22 38 50 6 Z" fill="#ffffff" />
+        <path d="M50 6 C78 38 80 96 70 148 L58 148 C66 96 64 40 50 6 Z" fill="#d9c8f7" opacity="0.7" />
+        <path d="M50 6 C61 19 68 32 70 48 L30 48 C32 32 39 19 50 6 Z" fill="#8a4fd6" />
+        <path d="M30 128 L70 128 L71 140 L29 140 Z" fill="#8a4fd6" />
+        <circle cx="50" cy="84" r="16" fill="#e9ddff" />
+        <circle cx="50" cy="84" r="11.5" fill="#2a1060" />
+        <ellipse cx="46" cy="79.5" rx="3.6" ry="2.6" fill="#ffffff" opacity="0.85" transform="rotate(-30 46 79.5)" />
+      </svg>
+      <div>
+        <h1>Tunisia IT Events</h1>
+        <p>Hackathons, workshops and meetups across Tunisia</p>
+      </div>
+    </div>
+    <nav>
+      @if (auth.currentAccount(); as acc) {
+        <span>{{ acc.firstName }}</span>
+        <a [routerLink]="auth.homeRoute()">My space</a>
+        <button type="button" (click)="auth.logout()">Log out</button>
+      } @else {
+        <a routerLink="/login">Log in</a>
+        <a routerLink="/signup">Sign up</a>
+      }
+    </nav>
+  </header>
 
-<section class="filters">
-  <input type="search" placeholder="Search events..." [(ngModel)]="keyword" />
+  <section class="filters">
+    <input type="search" placeholder="Search events..." aria-label="Search events" [(ngModel)]="keyword" />
 
-  <select [(ngModel)]="city">
-    <option value="">All cities</option>
-    @for (c of cities(); track c) { <option [value]="c">{{ c }}</option> }
-  </select>
+    <select aria-label="City" [(ngModel)]="city">
+      <option value="">All cities</option>
+      @for (c of cities(); track c) { <option [value]="c">{{ c }}</option> }
+    </select>
 
-  <select [(ngModel)]="domain">
-    <option value="">All domains</option>
-    @for (d of domains(); track d) { <option [value]="d">{{ d }}</option> }
-  </select>
+    <select aria-label="Domain" [(ngModel)]="domain">
+      <option value="">All domains</option>
+      @for (d of domains(); track d) { <option [value]="d">{{ d }}</option> }
+    </select>
 
-  <select [(ngModel)]="eventType">
-    <option value="">All types</option>
-    @for (t of types(); track t) { <option [value]="t">{{ t }}</option> }
-  </select>
+    <select aria-label="Event type" [(ngModel)]="eventType">
+      <option value="">All types</option>
+      @for (t of types(); track t) { <option [value]="t">{{ t }}</option> }
+    </select>
 
-  <select [(ngModel)]="payment">
-    <option value="">Free and paid</option>
-    <option value="FREE">Free</option>
-    <option value="PAID">Paid</option>
-  </select>
+    <select aria-label="Payment" [(ngModel)]="payment">
+      <option value="">Free and paid</option>
+      <option value="FREE">Free</option>
+      <option value="PAID">Paid</option>
+    </select>
 
-  <button type="button" (click)="reset()">Reset</button>
-</section>
-
-@if (loading()) {
-  <p class="msg">Loading...</p>
-} @else if (error()) {
-  <p class="msg error">{{ error() }}</p>
-} @else if (filtered().length === 0) {
-  <p class="msg">No events match your filters.</p>
-} @else {
-  <section class="grid">
-    @for (e of filtered(); track e.id) {
-      <a class="card" [routerLink]="['/events', e.id]">
-        @if (e.image) {
-          <img [src]="e.image" [alt]="e.title" loading="lazy" (error)="$any($event.target).hidden = true" />
-        }
-        <span class="tag">{{ e.eventType }} · {{ e.domain }}</span>
-        <h2>{{ e.title }}</h2>
-        <p>{{ e.startDate | date: 'EEE d MMM y, HH:mm' }}</p>
-        <p>{{ e.city }} · {{ e.address }}</p>
-        <p class="price">
-          {{ e.paymentMode === 'FREE' ? 'Free' : e.price + ' ' + e.currency }}
-        </p>
-      </a>
-    }
+    <button type="button" (click)="reset()">Reset</button>
   </section>
-}
+
+  @if (loading()) {
+    <p class="msg">Loading...</p>
+  } @else if (error()) {
+    <p class="msg error">{{ error() }}</p>
+  } @else if (filtered().length === 0) {
+    <p class="msg">No events match your filters.</p>
+  } @else {
+    <section class="grid">
+      @for (e of filtered(); track e.id) {
+        <a class="card" [routerLink]="['/events', e.id]">
+          @if (e.image) {
+            <img [src]="e.image" [alt]="e.title" loading="lazy" (error)="$any($event.target).hidden = true" />
+          }
+          <span class="tag">{{ e.eventType }} · {{ e.domain }}</span>
+          <h2>{{ e.title }}</h2>
+          <p>{{ e.startDate | date: 'EEE d MMM y, HH:mm' }}</p>
+          <p>{{ e.city }} · {{ e.address }}</p>
+          <p class="price">
+            {{ e.paymentMode === 'FREE' ? 'Free' : e.price + ' ' + e.currency }}
+          </p>
+        </a>
+      }
+    </section>
+  }
+</div>
