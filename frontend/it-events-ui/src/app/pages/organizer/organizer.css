@@ -19,3 +19,5 @@ button.danger { color:#b91c1c; border-color:#fca5a5; }
 .badge.rejected { background:#fee2e2; color:#991b1b; }
 .reason { color:#b91c1c !important; }
 .error { color:#b91c1c; }
+.image-field { display:flex; flex-direction:column; gap:8px; font-size:14px; }
+.preview { max-width:240px; border-radius:8px; border:1px solid #e5e7eb; }

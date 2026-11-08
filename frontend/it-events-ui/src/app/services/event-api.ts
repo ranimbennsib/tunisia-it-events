@@ -31,7 +31,18 @@ export class EventApi {
   remove(orgId: number, id: number): Observable<void> {
     return this.http.delete<void>(`${this.org(orgId)}/${id}`);
   }
-
+  // Image upload (organizer): returns the URL to store in the event
+  uploadImage(file: File): Observable<{ url: string }> {
+    const form = new FormData();
+    form.append('file', file);
+    return this.http.post<{ url: string }>(`${this.baseUrl}/images`, form);
+  }
+    // Logo upload: public, because an organizer has no token yet at sign-up
+  uploadLogo(file: File): Observable<{ url: string }> {
+    const form = new FormData();
+    form.append('file', file);
+    return this.http.post<{ url: string }>(`${this.baseUrl}/images/logo`, form);
+  }
   // Admin
   adminList(status: EventStatus): Observable<EventItem[]> {
     return this.http.get<EventItem[]>('/api/admin/events', {

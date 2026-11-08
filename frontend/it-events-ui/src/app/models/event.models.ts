@@ -22,8 +22,8 @@ export interface EventItem {
 }
 
 // Assumed values: check them against your PaymentMode / EventType enums (see end of message)
-export const PAYMENT_MODES = ['FREE', 'PAID'];
-export const EVENT_TYPES = ['MEETUP', 'WORKSHOP', 'CONFERENCE', 'HACKATHON'];
+   export const PAYMENT_MODES = ['FREE', 'ONLINE', 'CASH'];
+   export const EVENT_TYPES = ['MEETUP', 'WORKSHOP', 'CONFERENCE', 'HACKATHON', 'TRAINING'];
 
 export interface EventRequest {
   title: string;

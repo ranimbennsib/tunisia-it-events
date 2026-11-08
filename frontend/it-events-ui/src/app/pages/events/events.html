@@ -49,6 +49,9 @@
   <section class="grid">
     @for (e of filtered(); track e.id) {
       <a class="card" [routerLink]="['/events', e.id]">
+        @if (e.image) {
+          <img [src]="e.image" [alt]="e.title" loading="lazy" (error)="$any($event.target).hidden = true" />
+        }
         <span class="tag">{{ e.eventType }} · {{ e.domain }}</span>
         <h2>{{ e.title }}</h2>
         <p>{{ e.startDate | date: 'EEE d MMM y, HH:mm' }}</p>

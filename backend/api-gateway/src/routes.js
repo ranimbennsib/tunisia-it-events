@@ -23,6 +23,10 @@ const publicRules = [
   // public event list and detail (but NOT /api/events/mine)
   { method: 'GET', pattern: /^\/api\/events\/?$/ },
   { method: 'GET', pattern: /^\/api\/events\/\d+\/?$/ },
+  // event images (an <img> tag cannot send a token)
+  { method: 'GET', pattern: /^\/api\/events\/images\/[0-9a-f-]{36}\.(jpg|png|webp|gif)$/ },
+  // organizer logo upload at sign-up (the visitor has no token yet)
+   { method: 'POST', pattern: /^\/api\/events\/images\/logo\/?$/ },
   // public profile of an organizer
   { method: 'GET', pattern: /^\/api\/profiles\/organizers\/\d+\/?$/ },
   // number of places taken

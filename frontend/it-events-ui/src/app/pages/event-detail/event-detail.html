@@ -6,6 +6,9 @@
   <p class="error">{{ error() }}</p>
 } @else if (event(); as e) {
   <article>
+   @if (e.image) {
+      <img class="cover" [src]="e.image" [alt]="e.title" (error)="$any($event.target).hidden = true" />
+    }
     <span class="tag">{{ e.eventType }} · {{ e.domain }}</span>
     <h1>{{ e.title }}</h1>
     <p class="meta">

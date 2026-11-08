@@ -3,6 +3,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Auth } from '../../services/auth';
+import { EventApi } from '../../services/event-api';
 import { ApiError, Occupation } from '../../models/auth.models';
 
 @Component({
@@ -15,9 +16,11 @@ export class Signup {
   private fb = inject(FormBuilder);
   private auth = inject(Auth);
   private router = inject(Router);
+  private eventApi = inject(EventApi);
 
   role = signal<'user' | 'organizer'>('user');
   loading = signal(false);
+  uploading = signal(false);
   errorMessage = signal('');
   fieldErrors = signal<Record<string, string>>({});
 
@@ -66,7 +69,30 @@ export class Signup {
     }
     Object.values(c).forEach(control => control.updateValueAndValidity());
   }
+  onLogoFile(ev: Event): void {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { this.errorMessage.set('Please choose an image file.'); return; }
+    if (file.size > 2 * 1024 * 1024) { this.errorMessage.set('Logo too large (max 2 MB).'); return; }
+    this.uploading.set(true);
+    this.errorMessage.set('');
+    this.eventApi.uploadLogo(file).subscribe({
+      next: res => {
+        this.form.controls.logo.setValue(res.url);
+        this.form.controls.logo.markAsDirty();
+        this.uploading.set(false);
+        input.value = '';
+      },
+      error: (err: HttpErrorResponse) => {
+        this.uploading.set(false);
+        this.errorMessage.set(err.status === 0 ? 'Cannot reach the server.' : `Upload failed (error ${err.status}).`);
+        input.value = '';
+      }
+    });
+  }
 
+  clearLogo(): void { this.form.controls.logo.setValue(''); }
   showError(name: string): boolean {
     if (this.fieldErrors()[name]) return true;
     const c = this.form.get(name);

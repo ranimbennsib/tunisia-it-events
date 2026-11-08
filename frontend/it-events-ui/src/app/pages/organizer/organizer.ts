@@ -28,6 +28,7 @@ export class Organizer {
   error = signal('');
   showForm = signal(false);
   editingId = signal<number | null>(null);
+  uploading = signal(false);
 
   form = this.fb.nonNullable.group({
     title: ['', Validators.required],
@@ -41,7 +42,7 @@ export class Organizer {
     paymentMode: ['FREE', Validators.required],
     price: [null as number | null],
     currency: ['TND'],
-    image: [''],
+    image: ['', Validators.maxLength(255)],
     eventType: ['MEETUP', Validators.required]
   });
 
@@ -108,6 +109,21 @@ export class Organizer {
       error: err => this.error.set(this.msg(err))
     });
   }
+    onFile(ev: Event): void {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { this.error.set('Please choose an image file.'); return; }
+    if (file.size > 5 * 1024 * 1024) { this.error.set('Image too large (max 5 MB).'); return; }
+    this.uploading.set(true);
+    this.error.set('');
+    this.api.uploadImage(file).subscribe({
+      next: res => { this.form.controls.image.setValue(res.url); this.uploading.set(false); input.value = ''; },
+      error: err => { this.uploading.set(false); this.error.set(this.msg(err)); input.value = ''; }
+    });
+  }
+
+  clearImage(): void { this.form.controls.image.setValue(''); }
 
   private toApi(s: string): string {
     return s.length === 16 ? s + ':00' : s;   // backend wants no Z, with seconds

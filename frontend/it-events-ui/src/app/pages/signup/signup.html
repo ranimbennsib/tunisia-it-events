@@ -68,15 +68,22 @@
           @if (showError('description')) { <small class="err">{{ message('description') }}</small> }
         </label>
 
-        <div class="grid">
-          <label>Website (optional)
-            <input formControlName="website" placeholder="https://" />
-          </label>
+            <label>Website (optional)
+          <input formControlName="website" placeholder="https://" />
+        </label>
 
-          <label>Logo (URL)
-            <input formControlName="logo" placeholder="https://" />
-            @if (showError('logo')) { <small class="err">{{ message('logo') }}</small> }
-          </label>
+        <div class="logo-field">
+          <span>Logo: choose a file from your computer or paste a link</span>
+          <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" (change)="onLogoFile($event)" />
+          <input formControlName="logo" placeholder="https://... (logo link)" />
+          @if (uploading()) { <small>Uploading...</small> }
+          @if (showError('logo')) { <small class="err">{{ message('logo') }}</small> }
+          @if (form.controls.logo.value) {
+            <img class="logo-preview" [src]="form.controls.logo.value" alt="Logo preview"
+                 (load)="$any($event.target).hidden = false"
+                 (error)="$any($event.target).hidden = true" />
+            <button type="button" (click)="clearLogo()">Remove logo</button>
+          }
         </div>
       }
 

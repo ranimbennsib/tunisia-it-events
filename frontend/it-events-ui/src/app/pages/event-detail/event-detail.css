@@ -4,3 +4,4 @@
 .meta { color:#4b5563; margin:4px 0; }
 .price { font-weight:600; margin:12px 0; }
 .error { color:#b91c1c; }
+.cover { width:100%; max-height:320px; object-fit:cover; border-radius:12px; margin-bottom:16px; }
