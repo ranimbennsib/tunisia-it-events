@@ -1,0 +1,12 @@
+.list { list-style: none; padding: 0; margin: 20px 0; display: grid; gap: 14px; }
+.item { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 20px; border-radius: 18px; background: #f4efff; }
+.info { display: grid; gap: 4px; min-width: 0; }
+.title { font-weight: 700; color: #3b1a6e; text-decoration: none; }
+.meta { color: #7a6f90; font-size: 0.9rem; }
+.status { justify-self: start; padding: 2px 12px; border-radius: 999px; background: #d8f3e2; color: #1d6b3a; font-size: 0.8rem; font-weight: 700; }
+.status.pending { background: #fff0cc; color: #8a5a00; }
+.btn { all: unset; display: inline-block; box-sizing: border-box; padding: 10px 22px; border-radius: 999px; font: inherit; font-weight: 700; color: #fff; text-decoration: none; cursor: pointer; background: linear-gradient(90deg, #5b2a9e, #8a4fd6); }
+.btn.secondary { color: #a31d3f; background: #fde6ea; }
+.btn[disabled] { opacity: 0.6; cursor: default; }
+.error { color: #a31d3f; }
+.muted { color: #7a6f90; }
