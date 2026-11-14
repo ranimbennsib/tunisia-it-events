@@ -359,3 +359,26 @@ a, button, select { cursor: var(--cursor-rocket-go) !important; }
   article h1 { font-size: 1.6rem; }
   article:hover { transform: none; }
 }
+
+.reg-box { margin-top: 24px; padding: 20px; border-radius: 18px; background: #f4efff; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.reg-box p { margin: 0; flex-basis: 100%; }
+.btn {
+  all: unset;
+  display: inline-block;
+  box-sizing: border-box;
+  padding: 11px 26px;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  cursor: pointer;
+  background: linear-gradient(90deg, #5b2a9e, #8a4fd6);
+  box-shadow: 0 8px 18px rgba(91, 42, 158, 0.3);
+}
+.btn.secondary { color: #a31d3f; background: #fde6ea; box-shadow: none; }
+.btn.ghost { color: #5b2a9e; background: #d9c8f7; box-shadow: none; }
+.btn[disabled] { opacity: 0.6; cursor: default; }
+.ok { color: #1d6b3a; }
+.error { color: #a31d3f; }
+.muted { color: #7a6f90; }

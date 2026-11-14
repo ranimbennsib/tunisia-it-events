@@ -1,0 +1,37 @@
+<a routerLink="/events" class="back">&larr; All events</a>
+<h1>My registrations</h1>
+
+@if (loading()) {
+  <p>Loading...</p>
+} @else {
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+  @if (rows().length === 0) {
+    <p class="muted">You are not registered to any event yet.</p>
+    <a routerLink="/events" class="btn">Browse events</a>
+  } @else {
+    <ul class="list">
+      @for (row of rows(); track row.registration.id) {
+        <li class="item">
+          <div class="info">
+            @if (row.event; as e) {
+              <a [routerLink]="['/events', e.id]" class="title">{{ e.title }}</a>
+              <span class="meta">{{ e.startDate | date: 'EEE d MMM y, HH:mm' }} &middot; {{ e.city }}</span>
+            } @else {
+              <span class="title">Event #{{ row.registration.eventId }}</span>
+              <span class="meta">This event is no longer available.</span>
+            }
+            <span class="status" [class.pending]="row.registration.status === 'PENDING_PAYMENT'">
+              {{ row.registration.status === 'PENDING_PAYMENT' ? 'Payment pending' : 'Confirmed' }}
+            </span>
+          </div>
+          <button class="btn secondary" type="button"
+                  [disabled]="busyId() === row.registration.id" (click)="cancel(row)">
+            Cancel
+          </button>
+        </li>
+      }
+    </ul>
+  }
+}

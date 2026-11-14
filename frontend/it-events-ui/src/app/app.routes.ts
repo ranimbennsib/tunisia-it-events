@@ -24,5 +24,22 @@ export const routes: Routes = [
     canActivate: [roleGuard('ADMIN')],
     loadComponent: () => import('./pages/admin/admin').then(m => m.Admin)
   },
+    {
+    path: 'my-registrations',
+    loadComponent: () =>
+      import('./pages/my-registrations/my-registrations').then(m => m.MyRegistrations),
+    canActivate: [roleGuard('USER')]
+  },
+    {
+    path: 'favorites',
+    loadComponent: () => import('./pages/favorites/favorites').then(m => m.Favorites),
+    canActivate: [roleGuard('USER')]
+  },
+    {
+    path: 'organizer/events/:id/participants',
+    loadComponent: () =>
+      import('./pages/event-participants/event-participants').then(m => m.EventParticipants),
+    canActivate: [roleGuard('ORGANIZER')]
+  },
   { path: '**', redirectTo: 'events' }
 ];

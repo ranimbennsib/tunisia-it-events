@@ -24,6 +24,9 @@
       @if (auth.currentAccount(); as acc) {
         <span>{{ acc.firstName }}</span>
         <a [routerLink]="auth.homeRoute()">My space</a>
+        <a routerLink="/my-registrations">My registrations</a>
+        <a routerLink="/favorites">My favorites</a>
+    
         <button type="button" (click)="auth.logout()">Log out</button>
       } @else {
         <a routerLink="/login">Log in</a>

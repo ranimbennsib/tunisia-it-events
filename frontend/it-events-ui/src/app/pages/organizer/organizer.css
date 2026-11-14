@@ -493,3 +493,23 @@ a, button, select { cursor: var(--cursor-rocket-go) !important; }
   .item .actions button { flex: 1; }
   .item:hover { transform: none; }
 }
+
+
+.actions a {
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: #d9c8f7;
+  color: #5b2a9e;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.participants-link {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: #d9c8f7;
+  color: #5b2a9e;
+  font-weight: 700;
+  text-decoration: none;
+}

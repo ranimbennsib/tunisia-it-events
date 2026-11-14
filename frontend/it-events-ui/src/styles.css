@@ -17,9 +17,7 @@
   --lilac-2: #d9c8f7;
   --ink: #2b2140;
 
-  /* rocket cursor: the tip of the nose (6 6) is the click point */
-  --cursor-rocket: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><g transform='translate(16 16) rotate(-45) scale(.15) translate(-50 -106)' stroke-linejoin='round'><path d='M40 154Q50 212 60 154Z' fill='%23ff9a3c'/><path d='M45 154Q50 188 55 154Z' fill='%23ffe08a'/><path d='M33 104C18 118 9 138 7 160L37 142Z' fill='%23ff5e9c' stroke='%232a1060' stroke-width='7'/><path d='M67 104C82 118 91 138 93 160L63 142Z' fill='%23ff5e9c' stroke='%232a1060' stroke-width='7'/><path d='M50 6C78 38 80 96 70 148L30 148C20 96 22 38 50 6Z' fill='%23fff' stroke='%232a1060' stroke-width='7'/><path d='M50 6C61 19 68 32 70 48L30 48C32 32 39 19 50 6Z' fill='%238a4fd6'/><circle cx='50' cy='84' r='14' fill='%232a1060' stroke='%23d9c8f7' stroke-width='5'/></g></svg>") 6 6, auto;
-  --cursor-rocket-go: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><g transform='translate(16 16) rotate(-45) scale(.15) translate(-50 -106)' stroke-linejoin='round'><path d='M38 154Q50 236 62 154Z' fill='%23ff9a3c'/><path d='M44 154Q50 200 56 154Z' fill='%23ffe08a'/><path d='M33 104C18 118 9 138 7 160L37 142Z' fill='%23ff5e9c' stroke='%232a1060' stroke-width='7'/><path d='M67 104C82 118 91 138 93 160L63 142Z' fill='%23ff5e9c' stroke='%232a1060' stroke-width='7'/><path d='M50 6C78 38 80 96 70 148L30 148C20 96 22 38 50 6Z' fill='%23fff' stroke='%232a1060' stroke-width='7'/><path d='M50 6C61 19 68 32 70 48L30 48C32 32 39 19 50 6Z' fill='%238a4fd6'/><circle cx='50' cy='84' r='14' fill='%232a1060' stroke='%23d9c8f7' stroke-width='5'/></g></svg>") 6 6, pointer;
+  
 }
 
 
@@ -118,3 +116,41 @@ textarea { resize: vertical; }
 
 .foot { margin: 18px 0 0; text-align: center; color: var(--muted); font-size: 0.9rem; }
 .foot a { color: var(--accent); font-weight: 500; }
+
+/* ===== login <-> signup swap (View Transitions): only the sheet/poster/panel rules below ===== */
+
+::view-transition-group(sheet),
+::view-transition-group(poster),
+::view-transition-group(panel) {
+  animation-duration: 0.8s;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+/* sheet and poster look the same on both pages: one snapshot, no crossfade */
+::view-transition-old(sheet),
+::view-transition-old(poster) { display: none; }
+::view-transition-new(sheet),
+::view-transition-new(poster) { animation: none; mix-blend-mode: normal; }
+::view-transition-new(poster) { height: 100%; object-fit: cover; }
+
+/* the form differs between pages: fade out early, fade in once it has moved */
+::view-transition-old(panel),
+::view-transition-new(panel) {
+  mix-blend-mode: normal;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+::view-transition-old(panel) { animation: vt-fade-out 0.2s ease-in both; }
+::view-transition-new(panel) { animation: vt-fade-in 0.4s ease-out 0.2s both; }
+
+@keyframes vt-fade-out { to { opacity: 0; } }
+@keyframes vt-fade-in { from { opacity: 0; } }
+
+::view-transition-old(root),
+::view-transition-new(root) { animation: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) { animation: none; }
+}

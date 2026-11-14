@@ -1,0 +1,35 @@
+<a routerLink="/organizer" class="back">&larr; Back to my events</a>
+<h1>Participants</h1>
+@if (event(); as e) {
+  <p class="muted">{{ e.title }} &middot; capacity {{ e.capacity }}</p>
+}
+
+@if (loading()) {
+  <p>Loading...</p>
+} @else if (error()) {
+  <p class="error">{{ error() }}</p>
+} @else {
+  <div class="stats">
+    <div class="stat"><strong>{{ confirmed() }}</strong><span>Confirmed</span></div>
+    <div class="stat"><strong>{{ pending() }}</strong><span>Payment pending</span></div>
+    @if (event(); as e) {
+      <div class="stat"><strong>{{ e.capacity - active().length }}</strong><span>Places left</span></div>
+    }
+  </div>
+
+  @if (active().length === 0) {
+    <p class="muted">Nobody has registered yet.</p>
+  } @else {
+    <ul class="list">
+      @for (r of active(); track r.id) {
+        <li class="item">
+          <span class="title">Participant #{{ r.accountId }}</span>
+          <span class="meta">Registered {{ r.createdAt | date: 'd MMM y, HH:mm' }}</span>
+          <span class="status" [class.pending]="r.status === 'PENDING_PAYMENT'">
+            {{ r.status === 'PENDING_PAYMENT' ? 'Payment pending' : 'Confirmed' }}
+          </span>
+        </li>
+      }
+    </ul>
+  }
+}
