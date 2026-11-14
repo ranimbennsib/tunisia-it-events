@@ -1,0 +1,31 @@
+<a routerLink="/events" class="back">&larr; All events</a>
+<h1>My favorites</h1>
+
+@if (loading()) {
+  <p>Loading...</p>
+} @else {
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+  @if (events().length === 0) {
+    <p class="muted">You have no favorite events yet.</p>
+    <a routerLink="/events" class="btn">Browse events</a>
+  } @else {
+    <ul class="list">
+      @for (e of events(); track e.id) {
+        <li class="item">
+          <div class="info">
+            <a [routerLink]="['/events', e.id]" class="title">{{ e.title }}</a>
+            <span class="meta">
+              {{ e.startDate | date: 'EEE d MMM y, HH:mm' }} &middot; {{ e.city }} &middot;
+              {{ e.paymentMode === 'FREE' ? 'Free' : e.price + ' ' + e.currency }}
+            </span>
+          </div>
+          <button class="btn secondary" type="button" [disabled]="busyId() === e.id" (click)="remove(e)">
+            Remove
+          </button>
+        </li>
+      }
+    </ul>
+  }
+}

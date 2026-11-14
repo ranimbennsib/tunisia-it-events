@@ -1,132 +1,66 @@
-<main class="stage">
-  <section class="card">
-    <aside class="hero" aria-hidden="true">
-      <div class="hero-sticky">
-        
-        <svg class="art" viewBox="0 0 400 600" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
-          <defs>
-            <linearGradient id="rk-body" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0" stop-color="#ffffff" />
-              <stop offset="0.55" stop-color="#ffffff" />
-              <stop offset="1" stop-color="#d9c8f7" />
-            </linearGradient>
-            <linearGradient id="rk-nose" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stop-color="#b57bff" />
-              <stop offset="1" stop-color="#5b2a9e" />
-            </linearGradient>
-            <linearGradient id="rk-fin" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#ff8fb8" />
-              <stop offset="1" stop-color="#e0407f" />
-            </linearGradient>
-            <linearGradient id="rk-flame" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#ffd36b" />
-              <stop offset="0.55" stop-color="#ff7a45" />
-              <stop offset="1" stop-color="#ff4f8b" stop-opacity="0" />
-            </linearGradient>
-            <radialGradient id="rk-glass" cx="0.35" cy="0.3" r="0.9">
-              <stop offset="0" stop-color="#8a5cf0" />
-              <stop offset="1" stop-color="#1d0a4a" />
-            </radialGradient>
-            <linearGradient id="planet" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stop-color="#ffd1e8" />
-              <stop offset="0.55" stop-color="#b98cff" />
-              <stop offset="1" stop-color="#6a35b8" />
-            </linearGradient>
-            <path id="spark" d="M0 -6 L1.6 -1.6 L6 0 L1.6 1.6 L0 6 L-1.6 1.6 L-6 0 L-1.6 -1.6Z" />
-          </defs>
-
-          <!-- horizon glow -->
-          <circle cx="200" cy="610" r="230" fill="#ffb08a" opacity="0.35" />
-          <circle cx="200" cy="610" r="150" fill="#ffd8b0" opacity="0.35" />
-
-          <!-- ringed planet -->
-          <circle cx="70" cy="300" r="34" fill="url(#planet)" />
-          <ellipse cx="70" cy="300" rx="60" ry="13" fill="none" stroke="#ffe9f5" stroke-width="3" opacity="0.75" transform="rotate(-18 70 300)" />
-<g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="700" fill="#ffffff">
-            <g transform="translate(30 126) rotate(-6)">
-              <rect width="108" height="34" rx="17" fill="#ffffff" fill-opacity="0.14" stroke="#ffffff" stroke-opacity="0.38" />
-              <circle cx="18" cy="17" r="6" fill="#7ee0c3" />
-              <text x="32" y="22">Hackathon</text>
-            </g>
-            <g transform="translate(262 156) rotate(5)">
-              <rect width="104" height="34" rx="17" fill="#ffffff" fill-opacity="0.14" stroke="#ffffff" stroke-opacity="0.38" />
-              <circle cx="18" cy="17" r="6" fill="#7ec8ff" />
-              <text x="32" y="22">Datacamp</text>
-            </g>
-            <g transform="translate(26 376) rotate(-4)">
-              <rect width="100" height="34" rx="17" fill="#ffffff" fill-opacity="0.14" stroke="#ffffff" stroke-opacity="0.38" />
-              <circle cx="18" cy="17" r="6" fill="#ff8aa5" />
-              <text x="32" y="22">Marathon</text>
-            </g>
-            
-            <g transform="translate(272 434) rotate(3)">
-              <rect width="104" height="34" rx="17" fill="#ffffff" fill-opacity="0.14" stroke="#ffffff" stroke-opacity="0.38" />
-              <circle cx="18" cy="17" r="6" fill="#ffd166" />
-              <text x="32" y="22">Workshop</text>
-            </g>
-          </g>
-          <!-- moon -->
-          <circle cx="338" cy="262" r="17" fill="#ffe9d6" opacity="0.92" />
-          <circle cx="332" cy="257" r="3.5" fill="#f3cfb8" opacity="0.7" />
-          <circle cx="344" cy="268" r="2.5" fill="#f3cfb8" opacity="0.7" />
-
-          <!-- sparkles -->
-          <g fill="#fff">
-            <use href="#spark" transform="translate(318 330) scale(1)" opacity="0.9" />
-            <use href="#spark" transform="translate(120 250) scale(0.7)" opacity="0.8" />
-            <use href="#spark" transform="translate(360 420) scale(0.6)" opacity="0.7" />
-            <use href="#spark" transform="translate(40 410) scale(0.8)" opacity="0.8" />
-            <use href="#spark" transform="translate(300 215) scale(0.5)" opacity="0.7" />
+<main class="page">
+  <section class="sheet">
+    <aside class="poster">
+      <div class="art" aria-hidden="true">
+        <svg viewBox="0 0 600 560" preserveAspectRatio="xMidYMid slice">
+          <!-- pastel panels, like stacked windows -->
+          <g style="mix-blend-mode: multiply">
+            <rect x="90" y="90" width="300" height="230" rx="12" fill="#d3e3fa" />
+            <rect x="230" y="190" width="300" height="240" rx="12" fill="#fbd6d2" />
+            <rect x="80" y="330" width="190" height="150" rx="12" fill="#fbf0c0" />
+            <rect x="390" y="448" width="24" height="24" rx="3" fill="#d0eedb" />
+            <rect x="422" y="448" width="24" height="24" rx="3" fill="#d0eedb" />
+            <rect x="486" y="448" width="24" height="24" rx="3" fill="#d0eedb" />
+            <rect x="518" y="448" width="24" height="24" rx="3" fill="#d0eedb" />
+            <rect x="390" y="480" width="24" height="24" rx="3" fill="#d0eedb" />
+            <rect x="454" y="480" width="24" height="24" rx="3" fill="#d0eedb" />
+            <rect x="486" y="480" width="24" height="24" rx="3" fill="#d0eedb" />
+            <rect x="422" y="512" width="24" height="24" rx="3" fill="#d0eedb" />
+            <rect x="454" y="512" width="24" height="24" rx="3" fill="#d0eedb" />
+            <rect x="518" y="512" width="24" height="24" rx="3" fill="#d0eedb" />
           </g>
 
-          <!-- trail behind the rocket -->
-          <g fill="#fff">
-            <circle cx="128" cy="462" r="4" opacity="0.8" />
-            <circle cx="112" cy="485" r="3.2" opacity="0.65" />
-            <circle cx="100" cy="505" r="2.6" opacity="0.5" />
-            <circle cx="92" cy="522" r="2" opacity="0.4" />
+          <!-- window details: title bars and lines of code -->
+          <g fill="#1d2433" fill-opacity="0.35">
+            <circle cx="110" cy="107" r="4" /><circle cx="126" cy="107" r="4" /><circle cx="142" cy="107" r="4" />
+            <circle cx="250" cy="207" r="4" /><circle cx="266" cy="207" r="4" /><circle cx="282" cy="207" r="4" />
+          </g>
+          <g fill="none" stroke="#1d2433" stroke-opacity="0.3" stroke-width="3" stroke-linecap="round">
+            <path d="M112 150 H232 M112 172 H300 M136 194 H216 M136 216 H212 M112 238 H190" />
+            <path d="M252 250 H420 M252 272 H480 M276 294 H400 M276 316 H456 M252 338 H340" />
+            <path d="M102 362 H200 M102 384 H232 M122 406 H200" />
+          </g>
+          <g fill="none" stroke="#1d2433" stroke-opacity="0.25" stroke-width="1">
+            <path d="M90 124 H390 M230 224 H530" />
           </g>
 
-          <!-- rocket -->
-          <g transform="translate(215 325) rotate(32) scale(1.25) translate(-50 -106)">
-            <path d="M40 154 Q50 214 60 154 Z" fill="url(#rk-flame)" />
-            <path d="M45 154 Q50 190 55 154 Z" fill="#fff4c2" />
-            <path d="M33 104 C18 118 9 138 7 160 L37 142 Z" fill="url(#rk-fin)" />
-            <path d="M67 104 C82 118 91 138 93 160 L63 142 Z" fill="url(#rk-fin)" />
-            <path d="M36 148 L64 148 L60 157 L40 157 Z" fill="#4a2a8a" />
-            <path d="M50 6 C78 38 80 96 70 148 L30 148 C20 96 22 38 50 6 Z" fill="url(#rk-body)" />
-            <path d="M50 6 C61 19 68 32 70 48 L30 48 C32 32 39 19 50 6 Z" fill="url(#rk-nose)" />
-            <path d="M30 128 L70 128 L71 140 L29 140 Z" fill="#8a4fd6" />
-            <circle cx="50" cy="84" r="16" fill="#e9ddff" />
-            <circle cx="50" cy="84" r="16" fill="none" stroke="#b9a0ee" stroke-width="1.5" />
-            <circle cx="50" cy="84" r="11.5" fill="url(#rk-glass)" />
-            <ellipse cx="46" cy="79.5" rx="3.6" ry="2.6" fill="#fff" opacity="0.85" transform="rotate(-30 46 79.5)" />
-          </g>
-
-          <!-- cloud bank -->
-          <g fill="#ffd1dc" opacity="0.85">
-            <circle cx="60" cy="640" r="95" />
-            <circle cx="190" cy="650" r="105" />
-            <circle cx="330" cy="640" r="98" />
-          </g>
-          <g fill="#ffffff">
-            <circle cx="30" cy="615" r="88" />
-            <circle cx="150" cy="602" r="108" />
-            <circle cx="285" cy="618" r="94" />
-            <circle cx="385" cy="604" r="100" />
+          <!-- circuit traces -->
+          <g fill="none" stroke="#1d2433" stroke-opacity="0.5" stroke-width="1.2">
+            <path d="M560 70 H500 V120 H450 V150" />
+            <path d="M40 530 H150 V505 H230" />
+            <circle cx="560" cy="70" r="5" fill="#efe9dc" />
+            <circle cx="450" cy="150" r="5" fill="#efe9dc" />
+            <circle cx="40" cy="530" r="5" fill="#efe9dc" />
+            <circle cx="230" cy="505" r="5" fill="#efe9dc" />
           </g>
         </svg>
+      </div>
+
+      <div class="poster-text">
+        <span class="kicker">Tunisia IT Events</span>
+        <h2>Where the tech scene shows up.</h2>
+        <p class="topics">Hackathons / Workshops / Marathons / Datacamps</p>
       </div>
     </aside>
 
     <div class="panel">
       <div class="panel-inner">
         <h1>Create your account</h1>
-        <p class="subtitle">Join Tunisia IT Events</p>
+        <p class="subtitle">Join Tunisia IT Events as a participant or an organizer.</p>
 
-        <div class="toggle">
-          <button type="button" [class.active]="role() === 'user'" (click)="setRole('user')">Participant</button>
-          <button type="button" [class.active]="role() === 'organizer'" (click)="setRole('organizer')">Organizer</button>
+        <div class="toggle" role="group" aria-label="Account type">
+          <button type="button" [class.active]="role() === 'user'" [attr.aria-pressed]="role() === 'user'" (click)="setRole('user')">Participant</button>
+          <button type="button" [class.active]="role() === 'organizer'" [attr.aria-pressed]="role() === 'organizer'" (click)="setRole('organizer')">Organizer</button>
         </div>
 
         @if (errorMessage()) {
@@ -136,27 +70,32 @@
         <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
           <div class="grid">
             <div class="row">
-              <div class="field"><input formControlName="lastName" placeholder="Last name" aria-label="Last name" autocomplete="family-name" /></div>
+              <span class="label" aria-hidden="true">Last name</span>
+              <div class="field"><input formControlName="lastName" placeholder="Ben Salah" aria-label="Last name" autocomplete="family-name" /></div>
               @if (showError('lastName')) { <small class="err">{{ message('lastName') }}</small> }
             </div>
             <div class="row">
-              <div class="field"><input formControlName="firstName" placeholder="First name" aria-label="First name" autocomplete="given-name" /></div>
+              <span class="label" aria-hidden="true">First name</span>
+              <div class="field"><input formControlName="firstName" placeholder="Amine" aria-label="First name" autocomplete="given-name" /></div>
               @if (showError('firstName')) { <small class="err">{{ message('firstName') }}</small> }
             </div>
           </div>
 
           <div class="row">
-            <div class="field"><input type="email" formControlName="email" placeholder="Email" aria-label="Email" autocomplete="email" /></div>
+            <span class="label" aria-hidden="true">Email</span>
+            <div class="field"><input type="email" formControlName="email" placeholder="name@example.com" aria-label="Email" autocomplete="email" /></div>
             @if (showError('email')) { <small class="err">{{ message('email') }}</small> }
           </div>
 
           <div class="grid">
             <div class="row">
-              <div class="field"><input type="password" formControlName="password" placeholder="Password" aria-label="Password" autocomplete="new-password" /></div>
+              <span class="label" aria-hidden="true">Password</span>
+              <div class="field"><input type="password" formControlName="password" placeholder="Choose a password" aria-label="Password" autocomplete="new-password" /></div>
               @if (showError('password')) { <small class="err">{{ message('password') }}</small> }
             </div>
             <div class="row">
-              <div class="field"><input formControlName="phoneNumber" placeholder="Phone (8 digits)" aria-label="Phone (8 digits)" inputmode="numeric" maxlength="8" autocomplete="tel" /></div>
+              <span class="label" aria-hidden="true">Phone</span>
+              <div class="field"><input formControlName="phoneNumber" placeholder="8 digits" aria-label="Phone (8 digits)" inputmode="numeric" maxlength="8" autocomplete="tel" /></div>
               @if (showError('phoneNumber')) { <small class="err">{{ message('phoneNumber') }}</small> }
             </div>
           </div>
@@ -164,6 +103,7 @@
           @if (role() === 'user') {
             <div class="grid">
               <div class="row">
+                <span class="label" aria-hidden="true">Occupation</span>
                 <div class="field">
                   <select formControlName="occupation" aria-label="Occupation">
                     @for (o of occupations; track o.value) {
@@ -174,28 +114,33 @@
                 </div>
               </div>
               <div class="row">
-                <div class="field"><input formControlName="institution" placeholder="Institution" aria-label="Institution" /></div>
+                <span class="label" aria-hidden="true">Institution</span>
+                <div class="field"><input formControlName="institution" placeholder="University or company" aria-label="Institution" /></div>
                 @if (showError('institution')) { <small class="err">{{ message('institution') }}</small> }
               </div>
             </div>
           } @else {
             <div class="row">
-              <div class="field"><input formControlName="organizationName" placeholder="Organization name" aria-label="Organization name" /></div>
+              <span class="label" aria-hidden="true">Organization name</span>
+              <div class="field"><input formControlName="organizationName" placeholder="Your organization" aria-label="Organization name" /></div>
               @if (showError('organizationName')) { <small class="err">{{ message('organizationName') }}</small> }
             </div>
 
             <div class="row">
-              <div class="field area"><textarea rows="3" formControlName="description" placeholder="Description" aria-label="Description"></textarea></div>
+              <span class="label" aria-hidden="true">Description</span>
+              <div class="field area"><textarea rows="3" formControlName="description" placeholder="What does your organization do?" aria-label="Description"></textarea></div>
               @if (showError('description')) { <small class="err">{{ message('description') }}</small> }
             </div>
 
             <div class="row">
-              <div class="field"><input formControlName="website" placeholder="Website (optional) https://" aria-label="Website (optional)" /></div>
+              <span class="label" aria-hidden="true">Website (optional)</span>
+              <div class="field"><input formControlName="website" placeholder="https://" aria-label="Website (optional)" /></div>
             </div>
 
-            <div class="logo-field">
-              <span class="cap">Logo: choose a file from your computer or paste a link</span>
-              <input class="file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" (change)="onLogoFile($event)" />
+            <div class="row logo-field">
+              <span class="label" aria-hidden="true">Logo</span>
+              <span class="cap">Choose a file from your computer or paste a link.</span>
+              <input class="file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" aria-label="Logo file" (change)="onLogoFile($event)" />
               <div class="field"><input formControlName="logo" placeholder="https://... (logo link)" aria-label="Logo link" /></div>
               @if (uploading()) { <small class="note">Uploading...</small> }
               @if (showError('logo')) { <small class="err">{{ message('logo') }}</small> }
@@ -209,11 +154,12 @@
           }
 
           <button class="btn" type="submit" [disabled]="loading()">
-            {{ loading() ? 'Creating account…' : 'SIGN UP' }}
+            <span>{{ loading() ? 'Creating account…' : 'Create account' }}</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16 M14 6l6 6-6 6" /></svg>
           </button>
         </form>
 
-        <p class="foot">Already have an account? <a routerLink="/login">Log in</a></p>
+        <p class="foot">Already have an account? <a routerLink="/login">Sign in</a></p>
       </div>
     </div>
   </section>

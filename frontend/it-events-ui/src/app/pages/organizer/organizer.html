@@ -54,7 +54,7 @@
         </div>
       }
 
-       <div class="image-field">
+      <div class="image-field">
         <span>Image (optional): choose a file from your computer or paste a link</span>
         <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" (change)="onFile($event)" />
         <input formControlName="image" placeholder="https://... (image link)" />
@@ -94,6 +94,7 @@
             }
           </div>
           <div class="actions">
+            <a class="participants-link" [routerLink]="['/organizer/events', e.id, 'participants']">Participants</a>
             <button type="button" (click)="edit(e)">Edit</button>
             <button type="button" class="danger" (click)="remove(e)">Delete</button>
           </div>

@@ -1,4 +1,4 @@
-<a routerLink="/events" class="back"> All events</a>
+<a routerLink="/events" class="back">&larr; All events</a>
 
 @if (loading()) {
   <p>Loading...</p>
@@ -6,17 +6,51 @@
   <p class="error">{{ error() }}</p>
 } @else if (event(); as e) {
   <article>
-   @if (e.image) {
+    @if (e.image) {
       <img class="cover" [src]="e.image" [alt]="e.title" (error)="$any($event.target).hidden = true" />
     }
-    <span class="tag">{{ e.eventType }} · {{ e.domain }}</span>
+    <span class="tag">{{ e.eventType }} &middot; {{ e.domain }}</span>
     <h1>{{ e.title }}</h1>
     <p class="meta">
       {{ e.startDate | date: 'EEEE d MMMM y, HH:mm' }} to {{ e.endDate | date: 'HH:mm' }}
     </p>
-    <p class="meta">{{ e.city }} · {{ e.address }}</p>
-    <p class="meta">Capacity: {{ e.capacity }}</p>
+    <p class="meta">{{ e.city }} &middot; {{ e.address }}</p>
+    <p class="meta">Capacity: {{ e.capacity }} &middot; {{ placesLeft() }} places left</p>
     <p class="price">{{ e.paymentMode === 'FREE' ? 'Free' : e.price + ' ' + e.currency }}</p>
     <p>{{ e.description }}</p>
+
+    <section class="reg-box">
+      @if (!auth.currentAccount()) {
+        <p>Log in as a participant to register for this event.</p>
+        <a routerLink="/login" class="btn">Log in</a>
+      } @else if (role() !== 'USER') {
+        <p class="muted">Only participants can register for events.</p>
+      } @else {
+        @if (myRegistration(); as r) {
+          @if (r.status === 'PENDING_PAYMENT') {
+            <p class="ok">You are registered. Your payment is still pending.</p>
+          } @else {
+            <p class="ok">You are registered to this event.</p>
+          }
+          <button class="btn secondary" type="button" [disabled]="busy()" (click)="cancel()">
+            Cancel registration
+          </button>
+        } @else if (started()) {
+          <p class="muted">Registration is closed: this event has already started.</p>
+        } @else if (placesLeft() === 0) {
+          <p class="error">This event is full.</p>
+        } @else {
+          <button class="btn" type="button" [disabled]="busy()" (click)="register()">Register</button>
+        }
+
+        <button class="btn ghost" type="button" [disabled]="busy()" (click)="toggleFavorite()">
+          {{ isFavorite() ? 'Remove from favorites' : 'Add to favorites' }}
+        </button>
+      }
+
+      @if (actionError()) {
+        <p class="error">{{ actionError() }}</p>
+      }
+    </section>
   </article>
 }
