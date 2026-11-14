@@ -28,7 +28,10 @@
       } @else {
         @if (myRegistration(); as r) {
           @if (r.status === 'PENDING_PAYMENT') {
-            <p class="ok">You are registered. Your payment is still pending.</p>
+            <p class="muted">
+              Your registration is not complete yet. Complete the payment to confirm your seat.
+            </p>
+            <button class="btn" type="button" [disabled]="busy()" (click)="startPay()">Pay now</button>
           } @else {
             <p class="ok">You are registered to this event.</p>
           }
@@ -40,7 +43,9 @@
         } @else if (placesLeft() === 0) {
           <p class="error">This event is full.</p>
         } @else {
-          <button class="btn" type="button" [disabled]="busy()" (click)="register()">Register</button>
+          <button class="btn" type="button" [disabled]="busy()" (click)="register()">
+            {{ isOnline() ? 'Register and pay' : 'Register' }}
+          </button>
         }
 
         <button class="btn ghost" type="button" [disabled]="busy()" (click)="toggleFavorite()">
@@ -53,4 +58,14 @@
       }
     </section>
   </article>
+}
+
+@if (paying()) {
+  @if (myRegistration(); as r) {
+    <app-payment-dialog
+      [registrationId]="r.id"
+      [eventTitle]="event()?.title ?? ''"
+      (paid)="onPaid($event)"
+      (closed)="onPayClosed()" />
+  }
 }

@@ -1,0 +1,58 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.dialog {
+  position: fixed;
+  z-index: 1001;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(420px, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  padding: 1.5rem;
+  border-radius: 12px;
+  background: Canvas;
+  color: CanvasText;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+h2 { margin: 0 0 0.5rem; }
+
+form { display: grid; gap: 1rem; }
+
+label { display: grid; gap: 0.3rem; font-size: 0.9rem; }
+
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+input {
+  padding: 0.6rem 0.75rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+  background: transparent;
+  color: inherit;
+}
+
+input.invalid { border-color: #d93025; }
+
+.error { color: #d93025; margin: 0; }
+.muted, .hint { opacity: 0.7; margin: 0; font-size: 0.85rem; }
+
+.buttons { display: flex; justify-content: flex-end; gap: 0.5rem; }
+
+button {
+  padding: 0.6rem 1.1rem;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+button.primary { background: #1a73e8; border-color: #1a73e8; color: #fff; }
+button:disabled { opacity: 0.6; cursor: not-allowed; }

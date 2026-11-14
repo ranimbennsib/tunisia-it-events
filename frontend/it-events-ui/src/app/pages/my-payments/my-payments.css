@@ -1,0 +1,26 @@
+.back { display: inline-block; margin-bottom: 1rem; }
+.list { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.75rem; }
+.item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 1rem;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+}
+.info, .side { display: grid; gap: 0.2rem; }
+.side { text-align: right; justify-items: end; }
+.title { font-weight: 600; }
+.meta, .muted { opacity: 0.7; font-size: 0.9rem; }
+.error { color: #d93025; }
+.badge {
+  padding: 0.1rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  border: 1px solid currentColor;
+}
+.badge[data-status='paid'] { color: #188038; }
+.badge[data-status='failed'] { color: #d93025; }
+.badge[data-status='pending'] { color: #b06000; }
+.badge[data-status='refunded'] { color: #5f6368; }

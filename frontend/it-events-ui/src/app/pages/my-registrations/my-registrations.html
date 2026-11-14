@@ -1,5 +1,6 @@
 <a routerLink="/events" class="back">&larr; All events</a>
 <h1>My registrations</h1>
+<p><a routerLink="/my-payments">My payments</a></p>
 
 @if (loading()) {
   <p>Loading...</p>
@@ -26,12 +27,25 @@
               {{ row.registration.status === 'PENDING_PAYMENT' ? 'Payment pending' : 'Confirmed' }}
             </span>
           </div>
-          <button class="btn secondary" type="button"
-                  [disabled]="busyId() === row.registration.id" (click)="cancel(row)">
-            Cancel
-          </button>
+          <div class="actions">
+            @if (row.registration.status === 'PENDING_PAYMENT') {
+              <button class="btn" type="button" (click)="startPay(row)">Pay now</button>
+            }
+            <button class="btn secondary" type="button"
+                    [disabled]="busyId() === row.registration.id" (click)="cancel(row)">
+              Cancel
+            </button>
+          </div>
         </li>
       }
     </ul>
   }
+}
+
+@if (payingRow(); as p) {
+  <app-payment-dialog
+    [registrationId]="p.registration.id"
+    [eventTitle]="p.event?.title ?? ''"
+    (paid)="onPaid()"
+    (closed)="closePay()" />
 }

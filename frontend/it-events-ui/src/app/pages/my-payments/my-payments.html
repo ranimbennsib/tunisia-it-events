@@ -1,0 +1,42 @@
+<a routerLink="/my-registrations" class="back">&larr; My registrations</a>
+<h1>My payments</h1>
+
+@if (loading()) {
+  <p>Loading...</p>
+} @else {
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+  @if (rows().length === 0) {
+    <p class="muted">You have no payments yet.</p>
+  } @else {
+    <ul class="list">
+      @for (row of rows(); track row.payment.id) {
+        <li class="item">
+          <div class="info">
+            @if (row.event; as e) {
+              <a [routerLink]="['/events', e.id]" class="title">{{ e.title }}</a>
+            } @else {
+              <span class="title">Event #{{ row.payment.eventId }}</span>
+            }
+            <span class="meta">{{ row.payment.createdAt | date: 'd MMM y, HH:mm' }}</span>
+            @if (row.payment.cardLast4) {
+              <span class="meta">
+                {{ brandLabel(row.payment.cardBrand) }} &bull;&bull;&bull;&bull; {{ row.payment.cardLast4 }}
+              </span>
+            }
+            @if (row.payment.status === 'failed' && row.payment.failureReason) {
+              <span class="meta">{{ reasonLabel(row.payment.failureReason) }}</span>
+            }
+          </div>
+          <div class="side">
+            <strong>{{ row.payment.amount | number: '1.3-3' }} {{ row.payment.currency }}</strong>
+            <span class="badge" [attr.data-status]="row.payment.status">
+              {{ statusLabel(row.payment.status) }}
+            </span>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+}

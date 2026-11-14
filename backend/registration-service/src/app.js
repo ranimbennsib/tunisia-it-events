@@ -2,6 +2,7 @@ const express = require('express');
 const { errorHandler, notFound } = require('./errors');
 const registrations = require('./registrations');
 const favorites = require('./favorites');
+const internal = require('./internal');
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.get('/health', (req, res) => {
 
 app.use('/api/registrations', registrations);
 app.use('/api/favorites', favorites);
+app.use('/internal/registrations', internal);
 
 app.use(notFound);
 app.use(errorHandler);

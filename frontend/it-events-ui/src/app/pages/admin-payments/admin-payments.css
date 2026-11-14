@@ -1,0 +1,10 @@
+.org { margin-bottom: 2rem; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; }
+.org h2 { margin: 0 0 .5rem; }
+.totals { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem; font-size: .9rem; }
+.due { color: #0a6b3d; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: .5rem; text-align: left; border-bottom: 1px solid #eee; }
+.payers td { background: #fafafa; }
+.payers ul { margin: 0; padding-left: 1.2rem; }
+.muted { color: #777; }
+.error { color: #b00020; }
