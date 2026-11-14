@@ -1,0 +1,75 @@
+<h1>Payments by organizer</h1>
+
+@if (loading()) {
+  <p>Loading...</p>
+} @else if (error()) {
+  <p class="error">{{ error() }}</p>
+} @else if (organizers().length === 0) {
+  <p class="muted">No payment yet.</p>
+} @else {
+  @for (o of organizers(); track o.organizer_id) {
+    <section class="org">
+      <header>
+        <h2>Organizer #{{ o.organizer_id }}</h2>
+        <div class="totals">
+          <span>Paid: <b>{{ o.total_amount | number: '1.0-3' }} TND</b></span>
+          <span>Commission: {{ o.total_commission | number: '1.0-3' }} TND</span>
+          <span>Net: {{ o.total_net | number: '1.0-3' }} TND</span>
+          <span class="due">To pay out: <b>{{ o.unpaid_net | number: '1.0-3' }} TND</b></span>
+          <span>Already paid out: {{ o.paid_out_net | number: '1.0-3' }} TND</span>
+        </div>
+      </header>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Event</th>
+            <th>Payers</th>
+            <th>Total</th>
+            <th>Net</th>
+            <th>To pay out</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (e of o.events; track e.event_id) {
+            <tr>
+              <td>{{ title(e.event_id) }}</td>
+              <td>{{ e.payments_count }}</td>
+              <td>{{ e.total_amount | number: '1.0-3' }} TND</td>
+              <td>{{ e.total_net | number: '1.0-3' }} TND</td>
+              <td>{{ e.unpaid_net | number: '1.0-3' }} TND</td>
+              <td>
+                <button type="button" (click)="togglePayers(e.event_id)">
+                  {{ openEvent() === e.event_id ? 'Hide payers' : 'See payers' }}
+                </button>
+              </td>
+            </tr>
+
+            @if (openEvent() === e.event_id) {
+              <tr class="payers">
+                <td colspan="6">
+                  @if (!payers()[e.event_id]) {
+                    <p class="muted">Loading...</p>
+                  } @else if (payers()[e.event_id].length === 0) {
+                    <p class="muted">No payer.</p>
+                  } @else {
+                    <ul>
+                      @for (p of payers()[e.event_id]; track p.id) {
+                       <li>
+                            User #{{ p.userId }} &middot;
+                            {{ p.amount | number: '1.0-3' }} TND &middot;
+                            {{ p.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+                        </li>
+                      }
+                    </ul>
+                  }
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </section>
+  }
+}

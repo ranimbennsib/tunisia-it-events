@@ -2,6 +2,21 @@
   "/api": {
     "target": "http://localhost:8088",
     "secure": false,
+    "changeOrigin": true},
+
+  "/api/payments": {
+    "target": "http://localhost:8085",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "^/api/organizer/events/[^/]+/payments": {
+    "target": "http://localhost:8085",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "^/api/admin/(payments|organizers|events/[^/]+/payments)": {
+    "target": "http://localhost:8085",
+    "secure": false,
     "changeOrigin": true
   }
 }

@@ -7,6 +7,7 @@ import { EventApi } from '../../services/event-api';
 import { RegistrationApi } from '../../services/registration-api';
 import { EventItem } from '../../models/event.models';
 import { Registration } from '../../models/registration.models';
+import { PaymentDialog } from '../../components/payment-dialog/payment-dialog';
 
 interface Row {
   registration: Registration;
@@ -15,7 +16,7 @@ interface Row {
 
 @Component({
   selector: 'app-my-registrations',
-  imports: [RouterLink, DatePipe],
+  imports: [RouterLink, DatePipe, PaymentDialog],
   templateUrl: './my-registrations.html',
   styleUrl: './my-registrations.css'
 })
@@ -27,6 +28,7 @@ export class MyRegistrations {
   loading = signal(true);
   error = signal('');
   busyId = signal<number | null>(null);
+  payingRow = signal<Row | null>(null);
 
   constructor() {
     this.load();
@@ -45,6 +47,21 @@ export class MyRegistrations {
         this.busyId.set(null);
       }
     });
+  }
+
+  startPay(row: Row): void {
+    this.payingRow.set(row);
+  }
+
+  closePay(): void {
+    this.payingRow.set(null);
+  }
+
+  // Après un paiement réussi : on ferme la fenêtre et on recharge la liste.
+  onPaid(): void {
+    this.payingRow.set(null);
+    this.error.set('');
+    this.load();
   }
 
   private load(): void {

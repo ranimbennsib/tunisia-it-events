@@ -10,3 +10,4 @@
 .btn[disabled] { opacity: 0.6; cursor: default; }
 .error { color: #a31d3f; }
 .muted { color: #7a6f90; }
+.actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }

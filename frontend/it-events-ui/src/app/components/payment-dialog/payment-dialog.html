@@ -1,0 +1,62 @@
+<div class="backdrop"></div>
+
+<div class="dialog" role="dialog" aria-modal="true" aria-labelledby="pay-title">
+  @if (result(); as r) {
+    <h2 id="pay-title">Payment successful</h2>
+    <p>
+      {{ r.payment.amount | number: '1.3-3' }} {{ r.payment.currency }} paid with
+      {{ brandLabel(r.payment.cardBrand) }} &bull;&bull;&bull;&bull; {{ r.payment.cardLast4 }}.
+    </p>
+    @if (!r.registrationConfirmed) {
+      <p class="muted">Your registration will be confirmed shortly.</p>
+    }
+    <div class="buttons">
+      <button type="button" class="primary" (click)="paid.emit(r)">Done</button>
+    </div>
+  } @else {
+    <h2 id="pay-title">Pay for your registration</h2>
+    @if (eventTitle()) {
+      <p class="muted">{{ eventTitle() }}</p>
+    }
+
+    <form (submit)="$event.preventDefault(); submit()" novalidate>
+      <label>
+        Card number
+        <input type="text" inputmode="numeric" autocomplete="cc-number"
+               placeholder="4242 4242 4242 4242"
+               [value]="number()" (input)="onNumber($any($event.target).value)"
+               [class.invalid]="errorField() === 'number'" [disabled]="busy()" />
+      </label>
+
+      <div class="row">
+        <label>
+          Expiry (MM/YY)
+          <input type="text" inputmode="numeric" autocomplete="cc-exp"
+                 placeholder="12/30" maxlength="5"
+                 [value]="expiry()" (input)="onExpiry($any($event.target).value)"
+                 [class.invalid]="errorField() === 'expiry'" [disabled]="busy()" />
+        </label>
+        <label>
+          Security code
+          <input type="password" inputmode="numeric" autocomplete="cc-csc"
+                 placeholder="123" maxlength="4"
+                 [value]="cvv()" (input)="onCvv($any($event.target).value)"
+                 [class.invalid]="errorField() === 'cvv'" [disabled]="busy()" />
+        </label>
+      </div>
+
+      @if (error()) {
+        <p class="error" role="alert">{{ error() }}</p>
+      }
+
+      <p class="hint">Test environment: use card 4242 4242 4242 4242, any future date, any 3-digit code.</p>
+
+      <div class="buttons">
+        <button type="button" (click)="closed.emit()" [disabled]="busy()">Cancel</button>
+        <button type="submit" class="primary" [disabled]="busy()">
+          {{ busy() ? 'Processing...' : 'Pay' }}
+        </button>
+      </div>
+    </form>
+  }
+</div>

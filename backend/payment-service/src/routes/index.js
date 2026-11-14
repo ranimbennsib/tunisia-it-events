@@ -200,7 +200,77 @@ function createRoutes(config, paymentService) {
       }
     }
   );
+    // Administrateur : montants par organisateur, avec le détail par événement
+  router.get(
+    '/api/admin/organizers/summary',
+    auth,
+    requireRole('ADMIN'),
+    async (req, res) => {
+      try {
+        const rows = await paymentService.getSummary();
+        const byOrganizer = new Map();
 
+        for (const r of rows) {
+          const key = String(r.organizer_id);
+
+          if (!byOrganizer.has(key)) {
+            byOrganizer.set(key, {
+              organizer_id: Number(r.organizer_id),
+              payments_count: 0,
+              total_amount: 0,
+              total_commission: 0,
+              total_net: 0,
+              unpaid_net: 0,
+              paid_out_net: 0,
+              events: []
+            });
+          }
+
+          const o = byOrganizer.get(key);
+          const e = {
+            event_id: Number(r.event_id),
+            payments_count: Number(r.payments_count),
+            total_amount: Number(r.total_amount),
+            total_commission: Number(r.total_commission),
+            total_net: Number(r.total_net),
+            unpaid_net: Number(r.unpaid_net),
+            paid_out_net: Number(r.paid_out_net)
+          };
+
+          o.payments_count += e.payments_count;
+          o.total_amount += e.total_amount;
+          o.total_commission += e.total_commission;
+          o.total_net += e.total_net;
+          o.unpaid_net += e.unpaid_net;
+          o.paid_out_net += e.paid_out_net;
+          o.events.push(e);
+        }
+
+        // Millimes -> dinars
+        const money = [
+          'total_amount', 'total_commission', 'total_net',
+          'unpaid_net', 'paid_out_net'
+        ];
+        const organizers = [...byOrganizer.values()].map(o => {
+          const out = { ...o, events: o.events.map(e => ({ ...e })) };
+          for (const k of money) {
+            out[k] = toTnd(o[k]);
+            out.events.forEach(e => { e[k] = toTnd(e[k]); });
+          }
+          return out;
+        });
+
+        return res.status(200).json({
+          success: true,
+          unit: 'TND',
+          organizers
+        });
+
+      } catch (error) {
+        return handleError(req, res, error);
+      }
+    }
+  );
   // ============================================================
   // COMMUNICATION INTERNE (Payout Service, etc.)
   // Protégée par l'en-tête X-Internal-Key.
