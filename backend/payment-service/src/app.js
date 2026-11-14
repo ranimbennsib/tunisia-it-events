@@ -30,13 +30,16 @@ function createApp(config, deps = {}) {
       repository: paymentRepository,
       simulator: deps.bankSimulator,
 
-      // Ces fonctions seront connectées aux API
-      // de Registration Service et Event Service plus tard.
+      // Ces fonctions sont connectées aux API
+      // de Registration Service et Event Service.
       getRegistrationById:
         deps.getRegistrationById || dependencyUnavailable,
 
       getEventById:
         deps.getEventById || dependencyUnavailable,
+
+      // Optionnelle : confirme l'inscription après un paiement réussi.
+      confirmRegistration: deps.confirmRegistration || null,
 
       commissionRate: config.paymentCommissionRate
     });

@@ -27,9 +27,12 @@ function createPaymentService({
   repository = paymentRepository,
   simulator = createBankSimulator(),
 
-  // Ces deux fonctions sont connectées aux autres microservices.
+  // Ces fonctions sont connectées aux autres microservices.
   getRegistrationById,
   getEventById,
+
+  // Optionnelle : confirme l'inscription après un paiement réussi.
+  confirmRegistration = null,
 
   commissionRate = Number(
     process.env.PAYMENT_COMMISSION_RATE || 5
@@ -51,6 +54,25 @@ function createPaymentService({
     commissionRate > 100
   ) {
     throw new Error('Invalid commission rate');
+  }
+
+  // Confirme l'inscription sans jamais faire échouer le paiement.
+  // Retourne true si l'inscription est confirmée.
+  async function tryConfirmRegistration(registrationId, paymentId) {
+    if (typeof confirmRegistration !== 'function') {
+      return false;
+    }
+
+    try {
+      await confirmRegistration(registrationId);
+      return true;
+    } catch (error) {
+      console.error(
+        `Payment ${paymentId} is paid but registration ${registrationId} was NOT confirmed:`,
+        error.message
+      );
+      return false;
+    }
   }
 
   // Créer un paiement
@@ -87,6 +109,43 @@ function createPaymentService({
       throw createServiceError(
         403,
         'This registration does not belong to you'
+      );
+    }
+
+    // 3 bis. L'inscription doit attendre le paiement.
+    // Le Registration Service renvoie PENDING_PAYMENT, CONFIRMED ou CANCELLED.
+    const registrationStatus = registration.status
+      ? String(registration.status).toUpperCase()
+      : null;
+
+    // Pour un paiement déjà réussi, on laisse passer jusqu'à l'étape 8
+    // (rattrapage de la confirmation), qui répond 409 « already paid ».
+    const previousPayments =
+      await repository.findByRegistrationId(registrationId);
+
+    const activePayment = previousPayments.find(
+      payment =>
+        payment.status === 'pending' ||
+        payment.status === 'paid'
+    );
+
+    if (activePayment && activePayment.status === 'paid') {
+      // Rattrapage : paiement réussi, mais inscription pas encore confirmée
+      // (Registration Service indisponible lors du premier essai).
+      if (registrationStatus === 'PENDING_PAYMENT') {
+        await tryConfirmRegistration(registrationId, activePayment.id);
+      }
+
+      throw createServiceError(
+        409,
+        'This registration has already been paid'
+      );
+    }
+
+    if (registrationStatus && registrationStatus !== 'PENDING_PAYMENT') {
+      throw createServiceError(
+        409,
+        `This registration cannot be paid (status: ${registrationStatus})`
       );
     }
 
@@ -136,22 +195,11 @@ function createPaymentService({
       );
     }
 
-    // 8. Vérifier les paiements déjà existants
-    const previousPayments =
-      await repository.findByRegistrationId(registrationId);
-
-    const activePayment = previousPayments.find(
-      payment =>
-        payment.status === 'pending' ||
-        payment.status === 'paid'
-    );
-
+    // 8. Un paiement déjà en attente bloque une nouvelle tentative
     if (activePayment) {
       throw createServiceError(
         409,
-        activePayment.status === 'paid'
-          ? 'This registration has already been paid'
-          : 'A payment is already pending for this registration'
+        'A payment is already pending for this registration'
       );
     }
 
@@ -205,9 +253,15 @@ function createPaymentService({
           result.last4
         );
 
+        // Confirmer l'inscription (PENDING_PAYMENT -> CONFIRMED).
+        // Si le Registration Service est indisponible, le paiement reste valide.
+        const registrationConfirmed =
+          await tryConfirmRegistration(registrationId, payment.id);
+
         return {
           success: true,
           message: 'Payment successful',
+          registrationConfirmed,
           payment: updatedPayment
         };
       }

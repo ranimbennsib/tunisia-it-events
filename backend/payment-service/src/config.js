@@ -20,9 +20,10 @@ function buildConfig(env = process.env) {
     port: toInt(env.PORT, 8085),
     jwtSecret,
     internalKey,
-    // CORRECTION : ces deux valeurs manquaient
     paymentCommissionRate: Number(env.PAYMENT_COMMISSION_RATE ?? 5),
     eventServiceUrl: env.EVENT_SERVICE_URL || 'http://localhost:8083',
+    registrationServiceUrl:
+      env.REGISTRATION_SERVICE_URL || 'http://localhost:8084',
     logRequests: env.NODE_ENV !== 'test',
     db: {
       host: env.DB_HOST || 'localhost',

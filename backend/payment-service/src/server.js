@@ -6,51 +6,96 @@ const { createPool } = require('./db/pool');
 const { migrate } = require('./db/migrate');
 
 // ============================================================
-// TEMPORAIRE — À SUPPRIMER APRÈS LA CONNEXION DU REGISTRATION SERVICE
-// Inscription fictive : registrationId = 1, userId = 5, eventId = 4.
-// Générer le token avec :  npm run token -- USER 5
+// Appels vers les autres microservices
 // ============================================================
-async function getRegistrationById(registrationId) {
-  const fakeRegistrations = {
-    1: {
-      id: 1,
-      userId: 1, // CORRECTION : 5 (et non 1), comme le token de test
-      eventId: 4
-    }
-  };
 
-  return fakeRegistrations[Number(registrationId)] || null;
+function serviceError(statusCode, message) {
+  const error = new Error(message);
+  error.statusCode = statusCode;
+  return error;
 }
-// FIN DE LA SIMULATION TEMPORAIRE
 
-
-// ============================================================
-// Connexion réelle avec le Event Service
-// ============================================================
-async function getEventById(eventId) {
-  const baseUrl =
-    process.env.EVENT_SERVICE_URL || 'http://localhost:8083';
-
-  let response;
-
+// Appel HTTP avec délai maximum de 5 secondes.
+async function callService(name, url, options = {}) {
   try {
-    response = await fetch(`${baseUrl}/api/events/${eventId}`);
+    return await fetch(url, {
+      ...options,
+      signal: AbortSignal.timeout(5000)
+    });
   } catch (error) {
-    const serviceError = new Error('Event Service is unavailable');
-    serviceError.statusCode = 503;
-    throw serviceError;
+    throw serviceError(503, `${name} is unavailable`);
   }
+}
+
+// ---------- Registration Service ----------
+// Lit une inscription : { id, userId, eventId, status }
+async function getRegistrationById(registrationId) {
+  const baseUrl =
+    process.env.REGISTRATION_SERVICE_URL || 'http://localhost:8084';
+
+  const response = await callService(
+    'Registration Service',
+    `${baseUrl}/internal/registrations/${registrationId}`,
+    { headers: { 'X-Internal-Key': process.env.INTERNAL_KEY } }
+  );
 
   if (response.status === 404) {
     return null;
   }
 
   if (!response.ok) {
-    const serviceError = new Error(
+    throw serviceError(
+      503,
+      `Registration Service returned HTTP ${response.status}`
+    );
+  }
+
+  return response.json();
+}
+
+// Confirme l'inscription après un paiement réussi (PENDING_PAYMENT -> CONFIRMED).
+async function confirmRegistration(registrationId) {
+  const baseUrl =
+    process.env.REGISTRATION_SERVICE_URL || 'http://localhost:8084';
+
+  const response = await callService(
+    'Registration Service',
+    `${baseUrl}/internal/registrations/${registrationId}/confirm`,
+    {
+      method: 'POST',
+      headers: { 'X-Internal-Key': process.env.INTERNAL_KEY }
+    }
+  );
+
+  if (!response.ok) {
+    throw serviceError(
+      503,
+      `Registration Service returned HTTP ${response.status}`
+    );
+  }
+
+  return response.json();
+}
+
+// ---------- Event Service ----------
+async function getEventById(eventId) {
+  const baseUrl =
+    process.env.EVENT_SERVICE_URL || 'http://localhost:8083';
+
+  const response = await callService(
+    'Event Service',
+    `${baseUrl}/api/events/${eventId}`
+  );
+
+  if (response.status === 404) {
+    return null;
+  }
+
+  if (!response.ok) {
+    throw serviceError(
+      503,
       `Event Service returned HTTP ${response.status}`
     );
-    serviceError.statusCode = 503;
-    throw serviceError;
   }
 
   return response.json();
@@ -83,12 +128,15 @@ async function main() {
   const app = createApp(config, {
     db,
     getRegistrationById,
+    confirmRegistration,
     getEventById
   });
 
   const server = app.listen(config.port, () => {
     console.log(`payment-service listening on http://localhost:${config.port}`);
     console.log(`database: ${config.db.database} on ${config.db.host}:${config.db.port}`);
+    console.log(`registration-service: ${config.registrationServiceUrl}`);
+    console.log(`event-service: ${config.eventServiceUrl}`);
   });
 
   const shutdown = () => {
