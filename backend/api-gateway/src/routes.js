@@ -1,6 +1,18 @@
 // Which URL prefix goes to which service.
 // "paths" = whole prefixes, "patterns" = more precise rules (regular expressions).
+// ORDER MATTERS: the first matching entry wins, so the payment entry (which has
+// more precise rules under /api/admin/events/... ) must stay BEFORE the event entry.
 const routeTable = [
+  {
+    service: 'payment',
+    paths: ['/api/payments', '/api/admin/payments', '/api/admin/organizers'],
+    patterns: [
+      // organizer: payers of one of his events
+      /^\/api\/organizer\/events\/\d+\/payments\/?$/,
+      // admin: payers of one event
+      /^\/api\/admin\/events\/\d+\/payments\/?$/
+    ]
+  },
   { service: 'account', paths: ['/api/auth', '/api/accounts', '/api/admin/accounts'] },
   { service: 'profile', paths: ['/api/profiles', '/api/admin/profiles'] },
   {
@@ -10,7 +22,6 @@ const routeTable = [
     patterns: [/^\/api\/organizers\/\d+\/events(\/.*)?$/]
   },
   { service: 'registration', paths: ['/api/registrations', '/api/favorites'] },
-  { service: 'payment', paths: ['/api/payments', '/api/admin/payments'] },
   { service: 'payout', paths: ['/api/payouts', '/api/payout-accounts', '/api/admin/payouts'] },
   { service: 'notification', paths: ['/api/notifications'] }
 ];
@@ -26,7 +37,7 @@ const publicRules = [
   // event images (an <img> tag cannot send a token)
   { method: 'GET', pattern: /^\/api\/events\/images\/[0-9a-f-]{36}\.(jpg|png|webp|gif)$/ },
   // organizer logo upload at sign-up (the visitor has no token yet)
-   { method: 'POST', pattern: /^\/api\/events\/images\/logo\/?$/ },
+  { method: 'POST', pattern: /^\/api\/events\/images\/logo\/?$/ },
   // public profile of an organizer
   { method: 'GET', pattern: /^\/api\/profiles\/organizers\/\d+\/?$/ },
   // number of places taken
