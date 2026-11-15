@@ -1,32 +1,15 @@
 <div class="page">
   <header class="bar">
-    <div class="brand">
-      <svg class="mark" viewBox="0 0 100 200" aria-hidden="true">
-        <path d="M40 154 Q50 214 60 154 Z" fill="#ff9a3c" />
-        <path d="M45 154 Q50 190 55 154 Z" fill="#ffe08a" />
-        <path d="M33 104 C18 118 9 138 7 160 L37 142 Z" fill="#ff5e9c" />
-        <path d="M67 104 C82 118 91 138 93 160 L63 142 Z" fill="#ff5e9c" />
-        <path d="M36 148 L64 148 L60 157 L40 157 Z" fill="#4a2a8a" />
-        <path d="M50 6 C78 38 80 96 70 148 L30 148 C20 96 22 38 50 6 Z" fill="#ffffff" />
-        <path d="M50 6 C78 38 80 96 70 148 L58 148 C66 96 64 40 50 6 Z" fill="#d9c8f7" opacity="0.7" />
-        <path d="M50 6 C61 19 68 32 70 48 L30 48 C32 32 39 19 50 6 Z" fill="#8a4fd6" />
-        <path d="M30 128 L70 128 L71 140 L29 140 Z" fill="#8a4fd6" />
-        <circle cx="50" cy="84" r="16" fill="#e9ddff" />
-        <circle cx="50" cy="84" r="11.5" fill="#2a1060" />
-        <ellipse cx="46" cy="79.5" rx="3.6" ry="2.6" fill="#ffffff" opacity="0.85" transform="rotate(-30 46 79.5)" />
-      </svg>
-      <div>
-        <h1>Tunisia IT Events</h1>
-        <p>Hackathons, workshops and meetups across Tunisia</p>
-      </div>
-    </div>
+    <a class="brand" routerLink="/events">
+      <svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 7l-5 5 5 5 M16 7l5 5-5 5 M13.5 5l-3 14" /></svg>
+      <span>Tunisia IT Events</span>
+    </a>
     <nav>
       @if (auth.currentAccount(); as acc) {
-        <span>{{ acc.firstName }}</span>
+        <span class="who">{{ acc.firstName }}</span>
         <a [routerLink]="auth.homeRoute()">My space</a>
         <a routerLink="/my-registrations">My registrations</a>
         <a routerLink="/favorites">My favorites</a>
-    
         <button type="button" (click)="auth.logout()">Log out</button>
       } @else {
         <a routerLink="/login">Log in</a>
@@ -34,6 +17,16 @@
       }
     </nav>
   </header>
+
+  <section class="intro">
+    <h1>Upcoming events</h1>
+    <p>
+      Hackathons, workshops and meetups across Tunisia.
+      @if (!loading() && !error()) {
+        <span class="count">{{ filtered().length }} {{ filtered().length === 1 ? 'event' : 'events' }}</span>
+      }
+    </p>
+  </section>
 
   <section class="filters">
     <input type="search" placeholder="Search events..." aria-label="Search events" [(ngModel)]="keyword" />
@@ -71,17 +64,19 @@
   } @else {
     <section class="grid">
       @for (e of filtered(); track e.id) {
-        <a class="card" [routerLink]="['/events', e.id]">
+        <a class="poster" [routerLink]="['/events', e.id]" [attr.aria-label]="e.title">
           @if (e.image) {
             <img [src]="e.image" [alt]="e.title" loading="lazy" (error)="$any($event.target).hidden = true" />
+          } @else {
+            <span class="blank" aria-hidden="true">&lt;/&gt;</span>
           }
-          <span class="tag">{{ e.eventType }} · {{ e.domain }}</span>
-          <h2>{{ e.title }}</h2>
-          <p>{{ e.startDate | date: 'EEE d MMM y, HH:mm' }}</p>
-          <p>{{ e.city }} · {{ e.address }}</p>
-          <p class="price">
-            {{ e.paymentMode === 'FREE' ? 'Free' : e.price + ' ' + e.currency }}
-          </p>
+          <span class="info">
+            <span class="tag">{{ e.eventType }} &middot; {{ e.domain }}</span>
+            <span class="name">{{ e.title }}</span>
+            <span class="line">{{ e.startDate | date: 'EEE d MMM y, HH:mm' }}</span>
+            <span class="line">{{ e.city }} &middot; {{ e.address }}</span>
+            <span class="price">{{ e.paymentMode === 'FREE' ? 'Free' : e.price + ' ' + e.currency }}</span>
+          </span>
         </a>
       }
     </section>
