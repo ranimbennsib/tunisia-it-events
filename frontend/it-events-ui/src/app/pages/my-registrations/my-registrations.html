@@ -1,20 +1,45 @@
 <a routerLink="/events" class="back">&larr; All events</a>
-<h1>My registrations</h1>
-<p><a routerLink="/my-payments">My payments</a></p>
+
+<header class="head">
+  <div>
+    <p class="kicker">Participant space</p>
+    <h1>My registrations</h1>
+    @if (!loading()) {
+      <p class="lede">{{ rows().length }} {{ rows().length === 1 ? 'event' : 'events' }} on your path.</p>
+    }
+    <div class="circuit" aria-hidden="true"><i></i><b></b><i></i></div>
+  </div>
+  <a routerLink="/my-payments" class="pay-link">My payments</a>
+</header>
 
 @if (loading()) {
-  <p>Loading...</p>
+  <p class="state">Loading...</p>
 } @else {
   @if (error()) {
-    <p class="error">{{ error() }}</p>
+    <p class="error banner">{{ error() }}</p>
   }
+
   @if (rows().length === 0) {
-    <p class="muted">You are not registered to any event yet.</p>
-    <a routerLink="/events" class="btn">Browse events</a>
+    <div class="empty">
+      <span class="empty-mark">&lt;/&gt;</span>
+      <p class="muted">You are not registered to any event yet.</p>
+      <a routerLink="/events" class="btn">Browse events</a>
+    </div>
   } @else {
+    <!-- your events hang off one circuit line -->
     <ul class="list">
       @for (row of rows(); track row.registration.id) {
-        <li class="item">
+        <li class="item" [class.pending]="row.registration.status === 'PENDING_PAYMENT'">
+
+          <div class="when">
+            @if (row.event; as e) {
+              <span class="day">{{ e.startDate | date: 'd' }}</span>
+              <span class="month">{{ e.startDate | date: 'MMM y' }}</span>
+            } @else {
+              <span class="day gone">&lt;/&gt;</span>
+            }
+          </div>
+
           <div class="info">
             @if (row.event; as e) {
               <a [routerLink]="['/events', e.id]" class="title">{{ e.title }}</a>
@@ -27,6 +52,7 @@
               {{ row.registration.status === 'PENDING_PAYMENT' ? 'Payment pending' : 'Confirmed' }}
             </span>
           </div>
+
           <div class="actions">
             @if (row.registration.status === 'PENDING_PAYMENT') {
               <button class="btn" type="button" (click)="startPay(row)">Pay now</button>

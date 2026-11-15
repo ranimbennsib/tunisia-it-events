@@ -1,6 +1,6 @@
 <div class="backdrop"></div>
 
-<div class="dialog" role="dialog" aria-modal="true" aria-labelledby="pay-title">
+<div class="dialog" [class.done]="result()" role="dialog" aria-modal="true" aria-labelledby="pay-title">
   @if (result(); as r) {
     <h2 id="pay-title">Payment successful</h2>
     <p>

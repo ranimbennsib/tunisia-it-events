@@ -1,6 +1,6 @@
 <div class="page">
   <header class="bar">
-    <a class="brand" routerLink="/events">
+    <a class="brand" routerLink="/">
       <svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 7l-5 5 5 5 M16 7l5 5-5 5 M13.5 5l-3 14" /></svg>
       <span>Tunisia IT Events</span>
     </a>
@@ -13,6 +13,7 @@
           <a routerLink="/my-payments">My payments</a>
         }
         <a routerLink="/favorites">My favorites</a>
+        <a routerLink="/calendar">Calendar</a>
         <button type="button" (click)="auth.logout()">Log out</button>
       } @else {
         <a routerLink="/login">Log in</a>

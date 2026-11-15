@@ -4,7 +4,7 @@ import { Login } from './pages/login/login';
 import { roleGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'events' },
+  { path: '', pathMatch: 'full', loadComponent: () => import('./pages/landing/landing').then(m => m.Landing) },
   { path: 'signup', component: Signup },
   { path: 'login', component: Login },
   { path: 'events', loadComponent: () => import('./pages/events/events').then(m => m.Events) },
@@ -57,5 +57,6 @@ export const routes: Routes = [
       import('./pages/event-payments/event-payments').then(m => m.EventPayments),
     canActivate: [roleGuard('ORGANIZER')]
   },
-  { path: '**', redirectTo: 'events' }
+  { path: 'calendar', loadComponent: () => import('./pages/calendar/calendar').then(m => m.Calendar) },
+  { path: '**', redirectTo: '' }
 ];

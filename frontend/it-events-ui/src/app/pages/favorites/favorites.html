@@ -1,29 +1,59 @@
 <a routerLink="/events" class="back">&larr; All events</a>
-<h1>My favorites</h1>
+
+<header class="head">
+  <p class="kicker">Your shortlist</p>
+  <h1>My favorites</h1>
+  @if (!loading()) {
+    <p class="lede">{{ events().length }} {{ events().length === 1 ? 'event' : 'events' }} pinned.</p>
+  }
+  <div class="circuit" aria-hidden="true"><i></i><b></b><i></i></div>
+</header>
 
 @if (loading()) {
-  <p>Loading...</p>
+  <p class="state">Loading...</p>
 } @else {
   @if (error()) {
-    <p class="error">{{ error() }}</p>
+    <p class="error banner">{{ error() }}</p>
   }
+
   @if (events().length === 0) {
-    <p class="muted">You have no favorite events yet.</p>
-    <a routerLink="/events" class="btn">Browse events</a>
+    <div class="empty">
+      <span class="empty-mark">&#9825;</span>
+      <p>Nothing pinned yet.</p>
+      <a routerLink="/events" class="btn">Browse events</a>
+    </div>
   } @else {
-    <ul class="list">
+    <ul class="board">
       @for (e of events(); track e.id) {
-        <li class="item">
-          <div class="info">
-            <a [routerLink]="['/events', e.id]" class="title">{{ e.title }}</a>
-            <span class="meta">
-              {{ e.startDate | date: 'EEE d MMM y, HH:mm' }} &middot; {{ e.city }} &middot;
-              {{ e.paymentMode === 'FREE' ? 'Free' : e.price + ' ' + e.currency }}
-            </span>
+        <li class="card">
+          <span class="pin" aria-hidden="true"></span>
+
+          @if (e.paymentMode === 'FREE') {
+            <span class="stamp">Free</span>
+          }
+
+          <div class="date">
+            <span class="d-day">{{ e.startDate | date: 'd' }}</span>
+            <span class="d-month">{{ e.startDate | date: 'MMM y' }}</span>
           </div>
-          <button class="btn secondary" type="button" [disabled]="busyId() === e.id" (click)="remove(e)">
-            Remove
-          </button>
+
+          <a [routerLink]="['/events', e.id]" class="title">{{ e.title }}</a>
+
+          <ul class="chips">
+            <li class="chip">{{ e.startDate | date: 'EEE, HH:mm' }}</li>
+            <li class="chip">{{ e.city }}</li>
+            @if (e.paymentMode !== 'FREE') {
+              <li class="chip price">{{ e.price }} {{ e.currency }}</li>
+            }
+          </ul>
+
+          <div class="foot">
+            <a [routerLink]="['/events', e.id]" class="btn">View</a>
+            <button class="btn secondary" type="button"
+                    [disabled]="busyId() === e.id" (click)="remove(e)">
+              Unpin
+            </button>
+          </div>
         </li>
       }
     </ul>

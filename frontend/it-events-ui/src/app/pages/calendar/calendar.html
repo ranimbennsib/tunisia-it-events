@@ -1,0 +1,111 @@
+<a routerLink="/events" class="back">&larr; All events</a>
+
+<header class="head">
+  <p class="kicker">Schedule</p>
+  <h1>Calendar</h1>
+  @if (!loading() && !error()) {
+    <p class="lede">
+      {{ monthCount() }} {{ monthCount() === 1 ? 'event' : 'events' }} in {{ month() | date: 'MMMM y' }}.
+    </p>
+  }
+  <div class="circuit" aria-hidden="true"><i></i><b></b><i></i></div>
+</header>
+
+@if (loading()) {
+  <p class="state">Loading...</p>
+} @else if (error()) {
+  <p class="error banner">{{ error() }}</p>
+} @else {
+
+  <!-- toolbar -->
+  <div class="toolbar">
+    <div class="nav">
+      <button type="button" class="icon-btn" (click)="shift(-1)" aria-label="Previous month">&larr;</button>
+      <h2 class="month-label">{{ month() | date: 'MMMM y' }}</h2>
+      <button type="button" class="icon-btn" (click)="shift(1)" aria-label="Next month">&rarr;</button>
+    </div>
+    <button type="button" class="btn" (click)="today()">Today</button>
+  </div>
+
+  <ul class="legend" aria-label="Event types">
+    @for (t of types; track t) {
+      <li><i class="sw" [attr.data-type]="t"></i>{{ t }}</li>
+    }
+  </ul>
+
+  <!-- grid -->
+  <div class="cal" role="grid" [attr.aria-label]="(month() | date: 'MMMM y') + ' calendar'">
+    <div class="weekdays" role="row">
+      @for (w of weekdays; track w) { <span role="columnheader">{{ w }}</span> }
+    </div>
+
+    <div class="days">
+      @for (c of cells(); track c.key) {
+        <div class="cell" role="gridcell"
+             [class.out]="!c.inMonth"
+             [class.today]="c.isToday"
+             [class.selected]="c.key === selectedKey()"
+             [class.has]="c.events.length > 0">
+
+          <button type="button" class="num" (click)="select(c)"
+                  [attr.aria-label]="(c.date | date: 'EEEE d MMMM') + ', ' + c.events.length + ' events'">
+            {{ c.date | date: 'd' }}
+          </button>
+
+          <!-- desktop: event blocks -->
+          <div class="chips">
+            @for (e of c.events.slice(0, maxChips); track e.id) {
+              <a class="ev" [attr.data-type]="e.eventType" [routerLink]="['/events', e.id]" [title]="e.title">
+                <b>{{ e.startDate | date: 'HH:mm' }}</b> {{ e.title }}
+              </a>
+            }
+            @if (c.events.length > maxChips) {
+              <button type="button" class="more" (click)="select(c)">
+                +{{ c.events.length - maxChips }} more
+              </button>
+            }
+          </div>
+
+          <!-- mobile: dots only, details go in the agenda below -->
+          <div class="dots" aria-hidden="true">
+            @for (e of c.events.slice(0, 4); track e.id) {
+              <i class="dot" [attr.data-type]="e.eventType"></i>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- agenda of the selected day -->
+  <section class="agenda">
+    @if (selectedDay(); as d) {
+      <h3 class="agenda-title">
+        <span class="agenda-day">{{ d.date | date: 'd' }}</span>
+        <span>
+          {{ d.date | date: 'EEEE' }}<br />
+          <small>{{ d.date | date: 'MMMM y' }}</small>
+        </span>
+      </h3>
+
+      @if (d.events.length === 0) {
+        <p class="note">No event on this day.</p>
+      } @else {
+        <ul class="agenda-list">
+          @for (e of d.events; track e.id) {
+            <li class="ticket" [attr.data-type]="e.eventType">
+              <span class="time">{{ e.startDate | date: 'HH:mm' }}</span>
+              <div class="info">
+                <a [routerLink]="['/events', e.id]" class="title">{{ e.title }}</a>
+                <span class="meta">{{ e.eventType }} &middot; {{ e.city }}</span>
+              </div>
+              <span class="price">{{ e.paymentMode === 'FREE' ? 'Free' : e.price + ' ' + e.currency }}</span>
+            </li>
+          }
+        </ul>
+      }
+    } @else {
+      <p class="note">Select a day to see its events.</p>
+    }
+  </section>
+}

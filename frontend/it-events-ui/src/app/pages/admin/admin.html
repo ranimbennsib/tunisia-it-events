@@ -1,46 +1,82 @@
 <header class="bar">
-  <h1>Admin: event moderation</h1>
+  <a routerLink="/events" class="brand">
+    <span class="logo">&lt;/&gt;</span>
+    <span class="brand-name">Tunisia IT Events</span>
+  </a>
   <nav>
     <a routerLink="/admin/payments">Payments</a>
     <a routerLink="/events">Public site</a>
     <a routerLink="/profile">Profile</a>
-    <button type="button" (click)="auth.logout()" routerLink="/login">Log out</button>
+    <button type="button" class="logout" (click)="auth.logout()" routerLink="/login">Log out</button>
   </nav>
 </header>
 
 <main>
-  <div class="tabs">
+  <section class="head">
+    <p class="kicker">Admin</p>
+    <h1>Event moderation</h1>
+    <p class="lede">Review what organizers submit before it goes public.</p>
+    <div class="circuit" aria-hidden="true"><i></i><b></b><i></i></div>
+  </section>
+
+  <!-- the three queues, with live counts -->
+  <div class="tabs" role="tablist">
     @for (s of ['PENDING', 'APPROVED', 'REJECTED']; track s) {
-      <button type="button" [class.active]="filter() === s" (click)="filter.set($any(s))">
-        {{ s }} ({{ count($any(s)) }})
+      <button type="button" role="tab"
+              [class]="'tab ' + s.toLowerCase()"
+              [class.active]="filter() === s"
+              [attr.aria-selected]="filter() === s"
+              (click)="filter.set($any(s))">
+        <strong class="t-count">{{ count($any(s)) }}</strong>
+        <span class="t-label">{{ s }}</span>
       </button>
     }
   </div>
 
-  @if (error()) { <p class="error">{{ error() }}</p> }
+  @if (error()) { <p class="error banner">{{ error() }}</p> }
 
   @if (loading()) {
-    <p>Loading...</p>
+    <p class="state">Loading...</p>
   } @else if (shown().length === 0) {
-    <p>No {{ filter().toLowerCase() }} events.</p>
+    <div class="empty">
+      <span class="empty-mark">&lt;/&gt;</span>
+      <p>No {{ filter().toLowerCase() }} events.</p>
+    </div>
   } @else {
-    @for (e of shown(); track e.id) {
-      <article class="item">
-        <div>
-          <h3>{{ e.title }}</h3>
-          <p>{{ e.eventType }} · {{ e.domain }} · {{ e.city }}</p>
-          <p>{{ e.startDate | date: 'EEE d MMM y, HH:mm' }} · capacity {{ e.capacity }}</p>
-          <p>Organizer id: {{ e.organizerId }}</p>
-          <p>{{ e.description }}</p>
-          @if (e.rejectReason) { <p class="reason">Reason: {{ e.rejectReason }}</p> }
-        </div>
-        @if (e.status === 'PENDING') {
-          <div class="actions">
-            <button type="button" class="primary" (click)="approve(e)">Approve</button>
-            <button type="button" class="danger" (click)="reject(e)">Reject</button>
+    <section class="queue">
+      @for (e of shown(); track e.id) {
+        <article [class]="'item ' + e.status.toLowerCase()">
+
+          <div class="when">
+            <span class="day">{{ e.startDate | date: 'd' }}</span>
+            <span class="month">{{ e.startDate | date: 'MMM y' }}</span>
+            <span class="time">{{ e.startDate | date: 'HH:mm' }}</span>
           </div>
-        }
-      </article>
-    }
+
+          <div class="body">
+            <p class="kind">{{ e.eventType }} / {{ e.domain }}</p>
+            <h3>{{ e.title }}</h3>
+
+            <dl class="facts">
+              <div><dt>City</dt><dd>{{ e.city }}</dd></div>
+              <div><dt>Date</dt><dd>{{ e.startDate | date: 'EEE d MMM y, HH:mm' }}</dd></div>
+              <div><dt>Capacity</dt><dd>{{ e.capacity }}</dd></div>
+              <div><dt>Organizer</dt><dd>#{{ e.organizerId }}</dd></div>
+            </dl>
+
+            <p class="description">{{ e.description }}</p>
+
+            @if (e.rejectReason) { <p class="reason">Reason: {{ e.rejectReason }}</p> }
+          </div>
+
+          @if (e.status === 'PENDING') {
+            <div class="actions">
+              <button type="button" class="primary" (click)="approve(e)">Approve</button>
+              <button type="button" class="danger" (click)="reject(e)">Reject</button>
+            </div>
+          }
+        </article>
+      }
+    </section>
   }
 </main>

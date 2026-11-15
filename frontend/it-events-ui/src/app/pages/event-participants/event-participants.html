@@ -1,30 +1,62 @@
 <a routerLink="/organizer" class="back">&larr; Back to my events</a>
-<h1>Participants</h1>
-@if (event(); as e) {
-  <p class="muted">{{ e.title }} &middot; capacity {{ e.capacity }}</p>
-}
+
+<header class="head">
+  <p class="kicker">Organizer space</p>
+  <h1>Participants</h1>
+  @if (event(); as e) {
+    <p class="muted event-line">{{ e.title }} &middot; capacity {{ e.capacity }}</p>
+  }
+  <div class="circuit" aria-hidden="true"><i></i><b></b><i></i></div>
+</header>
 
 @if (loading()) {
-  <p>Loading...</p>
+  <p class="state">Loading...</p>
 } @else if (error()) {
-  <p class="error">{{ error() }}</p>
+  <p class="state error">{{ error() }}</p>
 } @else {
+
+  <!-- stats double as the legend of the seat map -->
   <div class="stats">
-    <div class="stat"><strong>{{ confirmed() }}</strong><span>Confirmed</span></div>
-    <div class="stat"><strong>{{ pending() }}</strong><span>Payment pending</span></div>
+    <div class="stat confirmed"><strong>{{ confirmed() }}</strong><span>Confirmed</span></div>
+    @if (event()?.paymentMode !== 'FREE') {
+      <div class="stat pending"><strong>{{ pending() }}</strong><span>Payment pending</span></div>
+    }
     @if (event(); as e) {
-      <div class="stat"><strong>{{ e.capacity - active().length }}</strong><span>Places left</span></div>
+      <div class="stat left"><strong>{{ e.capacity - active().length }}</strong><span>Places left</span></div>
     }
   </div>
 
+  <!-- seat map: one square per seat, filled in registration order -->
+  @if (event(); as e) {
+    <section class="map">
+      <div class="stage">Stage</div>
+      <div class="seats" role="img"
+           [attr.aria-label]="active().length + ' of ' + e.capacity + ' seats taken'">
+        @for (r of active(); track r.id; let i = $index) {
+          <i class="seat"
+             [class.pending]="r.status === 'PENDING_PAYMENT'"
+             [style.--i]="i"
+             [attr.title]="'Participant #' + r.accountId"></i>
+        }
+        @for (s of 'x'.repeat(e.capacity - active().length > 0 ? (e.capacity - active().length > 240 ? 240 : e.capacity - active().length) : 0).split(''); track $index) {
+          <i class="seat free" [style.--i]="$index + active().length"></i>
+        }
+      </div>
+      <p class="map-foot">{{ active().length }} of {{ e.capacity }} seats taken</p>
+    </section>
+  }
+
   @if (active().length === 0) {
-    <p class="muted">Nobody has registered yet.</p>
+    <p class="empty muted">Nobody has registered yet.</p>
   } @else {
     <ul class="list">
-      @for (r of active(); track r.id) {
-        <li class="item">
-          <span class="title">Participant #{{ r.accountId }}</span>
-          <span class="meta">Registered {{ r.createdAt | date: 'd MMM y, HH:mm' }}</span>
+      @for (r of active(); track r.id; let i = $index) {
+        <li class="item" [class.pending]="r.status === 'PENDING_PAYMENT'">
+          <span class="num">#{{ i + 1 }}</span>
+          <div class="who">
+            <span class="title">Participant #{{ r.accountId }}</span>
+            <span class="meta">Registered {{ r.createdAt | date: 'd MMM y, HH:mm' }}</span>
+          </div>
           <span class="status" [class.pending]="r.status === 'PENDING_PAYMENT'">
             {{ r.status === 'PENDING_PAYMENT' ? 'Payment pending' : 'Confirmed' }}
           </span>
