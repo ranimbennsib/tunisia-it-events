@@ -22,6 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.itevents.accountservice.dto.RefreshRequest;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
+import com.itevents.accountservice.client.NotificationClient;
+import com.itevents.accountservice.client.NotificationType;
+import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -31,7 +34,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final ProfileClient profileClient;
-
+        private final NotificationClient notificationClient;
     // Pas de @Transactional ici : on ne garde pas une transaction ouverte
     // pendant un appel HTTP vers un autre service.
     public AccountResponse register(RegisterRequest request) {
@@ -64,7 +67,7 @@ public class AuthService {
             }
             throw e;
         }
-
+         
         return AccountResponse.from(saved);
     }
 
@@ -80,7 +83,9 @@ public class AuthService {
         if (account.getAccountStatus() != AccountStatus.ACTIVE) {
             throw new AccountNotActiveException("Account is not active");
         }
-
+         if (account.getRole() != Role.ADMIN) {
+            notificationClient.send(account.getId(), NotificationType.ACCOUNT_CREATED, Map.of());
+        }
         return new LoginResponse(
                 jwtService.generateAccessToken(account),
                 jwtService.generateRefreshToken(account),
