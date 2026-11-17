@@ -1,0 +1,203 @@
+<a routerLink="/organizer" class="back">&larr; My events</a>
+
+<header class="head">
+  <p class="kicker">Organizer space</p>
+  <h1>Payouts</h1>
+  <p class="lede">What you earned, and the bank transfers sent to you.</p>
+  <div class="circuit" aria-hidden="true"><i></i><b></b><i></i></div>
+</header>
+
+<!-- ============ balance ============ -->
+@if (balanceError()) {
+  <p class="error banner">{{ balanceError() }}</p>
+} @else if (balance(); as b) {
+  <section class="slip" [attr.data-due]="b.unpaid_net > 0" aria-label="Balance">
+    <div class="slip-main">
+      <p class="tag">&lt;balance /&gt;</p>
+      <h2>Your earnings</h2>
+
+      <div class="progress" aria-hidden="true">
+        <span [style.width.%]="b.total_net ? (b.paid_out_net / b.total_net) * 100 : 0"></span>
+      </div>
+      <p class="progress-label">
+        <i class="sw paid"></i>already paid out
+        <i class="sw due"></i>still to receive
+      </p>
+
+      <dl class="figures">
+        <div><dt>Collected</dt><dd>{{ b.total_amount | number: '1.0-3' }} <small>TND</small></dd></div>
+        <div><dt>Commission</dt><dd>{{ b.total_commission | number: '1.0-3' }} <small>TND</small></dd></div>
+        <div><dt>Net</dt><dd>{{ b.total_net | number: '1.0-3' }} <small>TND</small></dd></div>
+        <div><dt>Already received</dt><dd>{{ b.paid_out_net | number: '1.0-3' }} <small>TND</small></dd></div>
+      </dl>
+    </div>
+
+    <div class="slip-stub">
+      <span class="stub-label">Still to receive</span>
+      <strong>{{ b.unpaid_net | number: '1.0-3' }} <small>TND</small></strong>
+      <div class="barcode" aria-hidden="true"></div>
+      <span class="serial">{{ b.payments_count }} {{ b.payments_count === 1 ? 'PAYMENT' : 'PAYMENTS' }}</span>
+    </div>
+  </section>
+
+  @if (!b.has_bank_account && b.unpaid_net > 0) {
+    <p class="notice">
+      You have money waiting, but no bank account yet. Add one below so that an admin can send you the transfer.
+    </p>
+  }
+}
+
+<!-- ============ bank account ============ -->
+<section class="block" aria-label="Bank account">
+  <h2 class="block-title">Bank account</h2>
+
+  @if (saved()) {
+    <p class="ok banner">Bank account saved.</p>
+  }
+
+  @if (account(); as a) {
+    @if (!editing()) {
+      <div class="card">
+        <dl class="account">
+          <div><dt>Holder</dt><dd>{{ a.holder_name }}</dd></div>
+          <div><dt>Bank</dt><dd>{{ a.bank_name }}</dd></div>
+          <div><dt>IBAN</dt><dd class="mono">{{ a.iban_masked }}</dd></div>
+          <div><dt>Updated</dt><dd>{{ a.updated_at | date: 'dd/MM/yyyy HH:mm' }}</dd></div>
+        </dl>
+        <button type="button" class="btn secondary" (click)="startEdit()">Change</button>
+      </div>
+    }
+  } @else if (!editing()) {
+    <div class="empty small"><p>No bank account registered.</p>
+      <button type="button" class="btn" (click)="startEdit()">Add my bank account</button>
+    </div>
+  }
+
+  @if (editing()) {
+    <form class="card form" [formGroup]="form" (ngSubmit)="save()" novalidate>
+      @if (account()) {
+        <p class="hint">For your safety, the full IBAN is never shown again: enter it again to replace it.</p>
+      }
+      <label>
+        <span>Account holder</span>
+        <input formControlName="holderName" autocomplete="name" maxlength="120" />
+        @if (form.controls.holderName.touched && form.controls.holderName.invalid) {
+          <em class="err">The holder name is required.</em>
+        }
+      </label>
+      <label>
+        <span>Bank</span>
+        <input formControlName="bankName" maxlength="120" />
+        @if (form.controls.bankName.touched && form.controls.bankName.invalid) {
+          <em class="err">The bank name is required.</em>
+        }
+      </label>
+      <label>
+        <span>IBAN</span>
+        <input formControlName="iban" class="mono" placeholder="TN59 1420 7207 1007 0712 9648" autocomplete="off" />
+        @if (form.controls.iban.touched && form.controls.iban.invalid) {
+          <em class="err">Enter a valid IBAN (2 letters, 2 digits, then the account number).</em>
+        }
+      </label>
+
+      @if (saveError()) {
+        <p class="error banner">{{ saveError() }}</p>
+      }
+
+      <div class="row">
+        <button type="submit" class="btn" [disabled]="saving()">{{ saving() ? 'Saving...' : 'Save' }}</button>
+        @if (account()) {
+          <button type="button" class="btn secondary" (click)="cancelEdit()">Cancel</button>
+        }
+      </div>
+    </form>
+  }
+</section>
+
+<!-- ============ payouts ============ -->
+<section class="block" aria-label="My payouts">
+  <h2 class="block-title">My payouts</h2>
+
+  @if (loading()) {
+    <p class="state">Loading...</p>
+  } @else if (payoutsError()) {
+    <p class="error banner">{{ payoutsError() }}</p>
+  } @else if (payouts().length === 0) {
+    <div class="empty">
+      <span class="empty-mark">&lt;/&gt;</span>
+      <p>No payout yet.</p>
+      <small>An admin sends you a transfer once your events have been paid.</small>
+    </div>
+  } @else {
+    <div class="scroll">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Created</th>
+            <th>Status</th>
+            <th class="num">Payments</th>
+            <th class="num">Commission</th>
+            <th class="num">You receive</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of payouts(); track p.id) {
+            <tr [class.open]="openPayout() === p.id">
+              <td data-label="#" class="mono">{{ p.id }}</td>
+              <td data-label="Created">{{ p.created_at | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td data-label="Status">
+                <span class="chip" [attr.data-status]="p.status" [title]="statusHelp(p.status)">{{ statusLabel(p.status) }}</span>
+              </td>
+              <td data-label="Payments" class="num">{{ p.payments_count }}</td>
+              <td data-label="Commission" class="num">{{ p.total_commission | number: '1.0-3' }} <small>TND</small></td>
+              <td data-label="You receive" class="num strong">{{ p.net_amount | number: '1.0-3' }} <small>TND</small></td>
+              <td class="act">
+                <button type="button" class="btn" [class.secondary]="openPayout() === p.id" (click)="toggle(p.id)">
+                  {{ openPayout() === p.id ? 'Hide' : 'Details' }}
+                </button>
+              </td>
+            </tr>
+
+            @if (openPayout() === p.id) {
+              <tr class="more">
+                <td colspan="7">
+                  <div class="more-body">
+                    <p class="meta">
+                      To <strong>{{ p.holder_name }}</strong>, {{ p.bank_name }},
+                      <span class="mono">{{ p.iban_masked }}</span>
+                      @if (p.paid_at) {
+                        <br />Sent on {{ p.paid_at | date: 'dd/MM/yyyy HH:mm' }}
+                        @if (p.bank_reference) { , reference <span class="mono">{{ p.bank_reference }}</span> }
+                      }
+                      @if (p.status === 'cancelled' && p.cancel_reason) {
+                        <br />{{ p.cancel_reason }}
+                      }
+                    </p>
+
+                    @if (!detail(p.id)) {
+                      <p class="note">Loading...</p>
+                    } @else if (detail(p.id) === 'error') {
+                      <p class="note">Could not load the payments of this payout.</p>
+                    } @else {
+                      <ul class="item-list">
+                        @for (i of detailItems(p.id); track i.payment_id) {
+                          <li>
+                            <span class="i-ev">{{ title(i.event_id) }}</span>
+                            <span class="i-id">payment #{{ i.payment_id }}</span>
+                            <span class="i-amount">{{ i.net_amount | number: '1.0-3' }} <small>TND</small></span>
+                          </li>
+                        }
+                      </ul>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

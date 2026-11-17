@@ -1,0 +1,203 @@
+<a routerLink="/admin" class="back">&larr; Admin</a>
+
+<header class="head">
+  <p class="kicker">Admin space</p>
+  <h1>Payouts</h1>
+  <p class="lede">Send organizers what their events earned, then confirm each bank transfer.</p>
+  <div class="circuit" aria-hidden="true"><i></i><b></b><i></i></div>
+</header>
+
+@if (notice()) {
+  <p class="ok banner" role="status">{{ notice() }}</p>
+}
+@if (actionError()) {
+  <p class="error banner" role="alert">{{ actionError() }}</p>
+}
+
+<!-- ============ amounts due ============ -->
+<section aria-label="Amounts due">
+  <h2 class="block-title">Due to organizers</h2>
+
+  @if (loadingOwed()) {
+    <p class="state">Loading...</p>
+  } @else if (owedError()) {
+    <p class="error banner">{{ owedError() }}</p>
+  } @else if (owed().length === 0) {
+    <div class="empty">
+      <span class="empty-mark">&lt;/&gt;</span>
+      <p>No payment to pay out yet.</p>
+    </div>
+  } @else {
+    <div class="scroll">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Organizer</th>
+            <th class="num">Payments</th>
+            <th class="num">Net</th>
+            <th class="num">Already paid out</th>
+            <th class="num">To pay out</th>
+            <th>Bank account</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (o of owed(); track o.organizer_id) {
+            <tr>
+              <td data-label="Organizer" class="strong">Organizer #{{ o.organizer_id }}</td>
+              <td data-label="Payments" class="num">{{ o.payments_count }}</td>
+              <td data-label="Net" class="num">{{ o.total_net | number: '1.0-3' }} <small>TND</small></td>
+              <td data-label="Already paid out" class="num">{{ o.paid_out_net | number: '1.0-3' }} <small>TND</small></td>
+              <td data-label="To pay out" class="num due-cell">{{ o.unpaid_net | number: '1.0-3' }} <small>TND</small></td>
+              <td data-label="Bank account">
+                <span [class]="o.has_bank_account ? 'yes' : 'no'">{{ o.has_bank_account ? 'Registered' : 'Missing' }}</span>
+              </td>
+              <td class="act">
+                @if (confirmCreate() === o.organizer_id) {
+                  <div class="confirm">
+                    <span>Pay {{ o.unpaid_net | number: '1.0-3' }} TND?</span>
+                    <button type="button" class="btn ok" [disabled]="busy() !== null" (click)="create(o)">
+                      {{ busy() === 'create-' + o.organizer_id ? 'Creating...' : 'Confirm' }}
+                    </button>
+                    <button type="button" class="btn secondary" [disabled]="busy() !== null" (click)="confirmCreate.set(null)">Cancel</button>
+                  </div>
+                } @else {
+                  <button type="button" class="btn"
+                          [disabled]="!o.can_pay_out || busy() !== null"
+                          [title]="o.can_pay_out ? 'Create a payout with all the unpaid sales' : (o.has_bank_account ? 'Nothing left to pay out' : 'The organizer has no bank account yet')"
+                          (click)="askCreate(o.organizer_id)">
+                    Create payout
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
+
+<!-- ============ payouts ============ -->
+<section class="block" aria-label="Payouts">
+  <h2 class="block-title">All payouts</h2>
+
+  <div class="filters" role="group" aria-label="Filter by status">
+    <button type="button" class="filter" [attr.aria-pressed]="filter() === null" (click)="setFilter(null)">All</button>
+    @for (s of statuses; track s) {
+      <button type="button" class="filter" [attr.aria-pressed]="filter() === s" (click)="setFilter(s)">{{ statusLabel(s) }}</button>
+    }
+  </div>
+
+  @if (loadingPayouts()) {
+    <p class="state">Loading...</p>
+  } @else if (payoutsError()) {
+    <p class="error banner">{{ payoutsError() }}</p>
+  } @else if (payouts().length === 0) {
+    <div class="empty">
+      <span class="empty-mark">&lt;/&gt;</span>
+      <p>No payout{{ filter() ? ' with this status' : '' }}.</p>
+    </div>
+  } @else {
+    <div class="scroll">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Organizer</th>
+            <th>Created</th>
+            <th>Status</th>
+            <th class="num">Payments</th>
+            <th class="num">Net</th>
+            <th>Bank</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of payouts(); track p.id) {
+            <tr [class.open]="openPayout() === p.id">
+              <td data-label="#" class="mono">{{ p.id }}</td>
+              <td data-label="Organizer">#{{ p.organizer_id }}</td>
+              <td data-label="Created">{{ p.created_at | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td data-label="Status">
+                <span class="chip" [attr.data-status]="p.status" [title]="statusHelp(p.status)">{{ statusLabel(p.status) }}</span>
+              </td>
+              <td data-label="Payments" class="num">{{ p.payments_count }}</td>
+              <td data-label="Net" class="num strong">{{ p.net_amount | number: '1.0-3' }} <small>TND</small></td>
+              <td data-label="Bank" class="bank">
+                {{ p.holder_name }}
+                <small>{{ p.bank_name }} / {{ p.iban_masked }}</small>
+              </td>
+              <td class="act">
+                @if (confirmPay() === p.id) {
+                  <div class="confirm">
+                    <span>Transfer sent?</span>
+                    <input type="text" name="reference" [(ngModel)]="reference" maxlength="100"
+                           placeholder="Bank reference (optional)" aria-label="Bank reference" />
+                    <button type="button" class="btn ok" [disabled]="busy() !== null" (click)="pay(p)">
+                      {{ busy() === 'pay-' + p.id ? 'Saving...' : 'Confirm' }}
+                    </button>
+                    <button type="button" class="btn secondary" [disabled]="busy() !== null" (click)="confirmPay.set(null)">Cancel</button>
+                  </div>
+                } @else {
+                  <div class="actions">
+                    @if (p.status === 'pending') {
+                      <button type="button" class="btn ok" [disabled]="busy() !== null" (click)="askPay(p.id)">Mark as paid</button>
+                    }
+                    @if (p.status === 'linking') {
+                      <button type="button" class="btn" [disabled]="busy() !== null" (click)="relink(p)">
+                        {{ busy() === 'relink-' + p.id ? 'Retrying...' : 'Retry link' }}
+                      </button>
+                    }
+                    <button type="button" class="btn" [class.secondary]="openPayout() === p.id" (click)="toggle(p.id)">
+                      {{ openPayout() === p.id ? 'Hide' : 'Details' }}
+                    </button>
+                  </div>
+                }
+              </td>
+            </tr>
+
+            @if (openPayout() === p.id) {
+              <tr class="more">
+                <td colspan="8">
+                  <div class="more-body">
+                    <p class="meta">
+                      Gross {{ p.total_amount | number: '1.0-3' }} TND, commission {{ p.total_commission | number: '1.0-3' }} TND,
+                      net <strong>{{ p.net_amount | number: '1.0-3' }} TND</strong>.
+                      @if (p.paid_at) {
+                        <br />Confirmed on {{ p.paid_at | date: 'dd/MM/yyyy HH:mm' }} by admin #{{ p.paid_by }},
+                        reference <span class="mono">{{ p.bank_reference }}</span>.
+                      }
+                      @if (p.status === 'linking') {
+                        <br />The payment service did not confirm the link yet: retry it before sending any money.
+                      }
+                      @if (p.status === 'cancelled' && p.cancel_reason) {
+                        <br />{{ p.cancel_reason }}
+                      }
+                    </p>
+
+                    @if (!detail(p.id)) {
+                      <p class="note">Loading...</p>
+                    } @else if (detail(p.id) === 'error') {
+                      <p class="note">Could not load the payments of this payout.</p>
+                    } @else {
+                      <ul class="item-list">
+                        @for (i of detailItems(p.id); track i.payment_id) {
+                          <li>
+                            <span class="i-ev">{{ title(i.event_id) }}</span>
+                            <span class="i-id">payment #{{ i.payment_id }}</span>
+                            <span class="i-amount">{{ i.net_amount | number: '1.0-3' }} <small>TND</small></span>
+                          </li>
+                        }
+                      </ul>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
