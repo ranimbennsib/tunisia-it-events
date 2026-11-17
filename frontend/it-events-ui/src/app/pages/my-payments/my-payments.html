@@ -1,0 +1,74 @@
+<a routerLink="/my-registrations" class="back">&larr; My registrations</a>
+
+<header class="head">
+  <p class="kicker">Participant space</p>
+  <h1>My payments</h1>
+  @if (!loading()) {
+    <p class="lede">{{ rows().length }} {{ rows().length === 1 ? 'receipt' : 'receipts' }} on record.</p>
+  }
+  <div class="circuit" aria-hidden="true"><i></i><b></b><i></i></div>
+</header>
+
+@if (loading()) {
+  <p class="state">Loading...</p>
+} @else {
+  @if (error()) {
+    <p class="error banner">{{ error() }}</p>
+  }
+
+  @if (rows().length === 0) {
+    <div class="empty">
+      <span class="empty-mark">&lt;/&gt;</span>
+      <p class="muted">You have no payments yet.</p>
+    </div>
+  } @else {
+    <ul class="list">
+      @for (row of rows(); track row.payment.id) {
+        <li class="ticket" [attr.data-status]="row.payment.status">
+
+          <!-- main part -->
+          <div class="main">
+            <div class="top">
+              
+              <span class="badge" [attr.data-status]="row.payment.status">
+                {{ statusLabel(row.payment.status) }}
+              </span>
+            </div>
+
+            <div class="body">
+              <div class="when">
+                <span class="day">{{ row.payment.createdAt | date: 'd' }}</span>
+                <span class="month">{{ row.payment.createdAt | date: 'MMM y' }}</span>
+              </div>
+
+              <div class="info">
+                @if (row.event; as e) {
+                  <a [routerLink]="['/events', e.id]" class="title">{{ e.title }}</a>
+                } @else {
+                  <span class="title">Event #{{ row.payment.eventId }}</span>
+                }
+                <span class="meta">{{ row.payment.createdAt | date: 'd MMM y, HH:mm' }}</span>
+                @if (row.payment.cardLast4) {
+                  <span class="meta chip">
+                    {{ brandLabel(row.payment.cardBrand) }} &bull;&bull;&bull;&bull; {{ row.payment.cardLast4 }}
+                  </span>
+                }
+                @if (row.payment.status === 'failed' && row.payment.failureReason) {
+                  <span class="meta reason">{{ reasonLabel(row.payment.failureReason) }}</span>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- stub: amount + code -->
+          <div class="stub">
+            <span class="stub-label">Amount</span>
+            <strong>{{ row.payment.amount | number: '1.3-3' }} <small>{{ row.payment.currency }}</small></strong>
+            <div class="barcode" aria-hidden="true"></div>
+            <span class="serial">PAY-{{ row.payment.id }} / EVT-{{ row.payment.eventId }}</span>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+}

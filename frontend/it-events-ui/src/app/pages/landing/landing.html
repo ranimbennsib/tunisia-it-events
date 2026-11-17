@@ -1,0 +1,248 @@
+<!-- ===== top bar ===== -->
+<header class="bar">
+  <a class="brand" routerLink="/">
+    <svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 7l-5 5 5 5 M16 7l5 5-5 5 M13.5 5l-3 14" /></svg>
+    <span>Tunisia IT Events</span>
+  </a>
+
+  <button type="button" class="burger" (click)="menuOpen.set(!menuOpen())"
+          [attr.aria-expanded]="menuOpen()" aria-label="Menu">
+    <i></i><i></i><i></i>
+  </button>
+
+  <nav [class.open]="menuOpen()">
+    <a routerLink="/events">Events</a>
+    <a routerLink="/calendar">Calendar</a>
+    <button type="button" class="link" (click)="scrollTo('about')">About</button>
+    <button type="button" class="link" (click)="scrollTo('how')">How it works</button>
+
+    @if (auth.currentAccount(); as acc) {
+      <a [routerLink]="auth.homeRoute()" class="pill">{{ acc.firstName }}&rsquo;s space</a>
+      <button type="button" class="link" (click)="auth.logout()">Log out</button>
+    } @else {
+      <a routerLink="/login">Log in</a>
+      <a routerLink="/signup" class="pill">Sign up</a>
+    }
+  </nav>
+</header>
+
+<!-- ===== hero ===== -->
+<section class="hero">
+  <div class="hero-text">
+    <p class="kicker">Tech community &middot; Tunisia</p>
+    <h1>Every IT event in Tunisia, in one place.</h1>
+    <p class="lead">
+      Hackathons, workshops, conferences and meetups. Find the next one, register in a minute,
+      and keep your tickets and receipts together.
+    </p>
+    <div class="cta">
+      <a routerLink="/events" class="btn">Browse events</a>
+      <a routerLink="/calendar" class="btn secondary">Open the calendar</a>
+    </div>
+    <div class="circuit" aria-hidden="true"><i></i><b></b><i></i></div>
+  </div>
+
+  <!-- the next event as a ticket -->
+  <aside class="hero-card">
+    @if (loading()) {
+      <p class="state">Loading...</p>
+    } @else if (next(); as n) {
+      <article class="ticket" [attr.data-type]="n.eventType">
+        <div class="t-main">
+          <p class="tag">&lt;next-event id="{{ n.id }}" /&gt;</p>
+          <div class="t-date">
+            <span class="day">{{ n.startDate | date: 'd' }}</span>
+            <span class="month">{{ n.startDate | date: 'MMM y' }}</span>
+          </div>
+          <a [routerLink]="['/events', n.id]" class="t-title">{{ n.title }}</a>
+          <p class="t-meta">{{ n.startDate | date: 'EEE, HH:mm' }} &middot; {{ n.city }}</p>
+        </div>
+        <div class="t-stub">
+          <span class="stub-label">{{ n.eventType }}</span>
+          <strong>{{ price(n) }}</strong>
+          <div class="barcode" aria-hidden="true"></div>
+          <a [routerLink]="['/events', n.id]" class="btn small">See details</a>
+        </div>
+      </article>
+    } @else {
+      <article class="ticket empty-ticket">
+        <p class="t-title">No upcoming event yet.</p>
+        <p class="t-meta">New events are added by organizers all the time.</p>
+      </article>
+    }
+  </aside>
+</section>
+
+@if (error()) { <p class="error banner">{{ error() }}</p> }
+
+<!-- ===== numbers ===== -->
+@if (!loading() && !error()) {
+  <section class="stats" aria-label="Platform in numbers">
+    <div class="stat" style="--tone: var(--blue)"><strong>{{ stats().events }}</strong><span>events</span></div>
+    <div class="stat" style="--tone: var(--yellow)"><strong>{{ stats().cities }}</strong><span>cities</span></div>
+    <div class="stat" style="--tone: var(--green)"><strong>{{ stats().domains }}</strong><span>domains</span></div>
+    <div class="stat" style="--tone: var(--pink)"><strong>{{ stats().free }}</strong><span>free events</span></div>
+  </section>
+}
+
+<!-- ===== upcoming ===== -->
+<section class="section" id="events">
+  <div class="section-head">
+    <div>
+      <p class="kicker">Coming up</p>
+      <h2>Upcoming events</h2>
+    </div>
+    <a routerLink="/events" class="more">See all events</a>
+  </div>
+
+  @if (loading()) {
+    <p class="state">Loading...</p>
+  } @else if (featured().length === 0) {
+    <div class="empty">
+      <span class="empty-mark">&lt;/&gt;</span>
+      <p>Nothing scheduled right now.</p>
+      <a routerLink="/events" class="btn small">Browse past events</a>
+    </div>
+  } @else {
+    <ul class="cards">
+      @for (e of featured(); track e.id) {
+        <li>
+          <a class="card" [attr.data-type]="e.eventType" [routerLink]="['/events', e.id]">
+            <span class="cover">
+              @if (e.image) {
+                <img [src]="e.image" [alt]="e.title" loading="lazy" (error)="$any($event.target).hidden = true" />
+              } @else {
+                <span class="blank" aria-hidden="true">&lt;/&gt;</span>
+              }
+              <span class="badge">{{ e.eventType }}</span>
+            </span>
+            <span class="body">
+              <span class="when">{{ e.startDate | date: 'EEE d MMM, HH:mm' }}</span>
+              <span class="name">{{ e.title }}</span>
+              <span class="where">{{ e.city }} &middot; {{ e.domain }}</span>
+              <span class="price">{{ price(e) }}</span>
+            </span>
+          </a>
+        </li>
+      }
+    </ul>
+  }
+</section>
+
+<!-- ===== browse by type ===== -->
+@if (types().length > 0) {
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <p class="kicker">Find your format</p>
+        <h2>Browse by type</h2>
+      </div>
+    </div>
+    <ul class="types">
+      @for (t of types(); track t.name) {
+        <li>
+          <a routerLink="/events" class="type" [attr.data-type]="t.name">
+            <span class="type-name">{{ t.name }}</span>
+            <span class="type-count">{{ t.count }} {{ t.count === 1 ? 'event' : 'events' }}</span>
+          </a>
+        </li>
+      }
+    </ul>
+  </section>
+}
+
+<!-- ===== about ===== -->
+<section class="section about" id="about">
+  <div class="about-text">
+    <p class="kicker">About</p>
+    <h2>A home for Tunisia&rsquo;s tech community</h2>
+    <p>
+      Tunisia IT Events brings together the hackathons, workshops, conferences, trainings and meetups
+      that happen across the country. Organizers publish their events here, and every event is
+      checked by an admin before it goes live.
+    </p>
+    <p>
+      Participants can search by city, domain and type, register in a few clicks, pay online when an
+      event is paid, and keep every receipt in their own space.
+    </p>
+  </div>
+
+  <div class="audience">
+    <article class="aud" style="--tone: var(--blue)">
+      <h3>For participants</h3>
+      <ul>
+        <li>Search and filter all approved events</li>
+        <li>Register, and pay by card for paid events</li>
+        <li>Save favorites and print your receipts</li>
+      </ul>
+      <a routerLink="/signup" class="btn small">Create an account</a>
+    </article>
+
+    <article class="aud" style="--tone: var(--yellow)">
+      <h3>For organizers</h3>
+      <ul>
+        <li>Publish events with image, price and capacity</li>
+        <li>See participants and payments per event</li>
+        <li>Follow what has been paid out to you</li>
+      </ul>
+      <a routerLink="/signup" class="btn small">Become an organizer</a>
+    </article>
+  </div>
+</section>
+
+<!-- ===== how it works ===== -->
+<section class="section" id="how">
+  <div class="section-head">
+    <div>
+      <p class="kicker">Simple</p>
+      <h2>How it works</h2>
+    </div>
+  </div>
+
+  <ol class="steps">
+    <li class="step" style="--tone: var(--blue)">
+      <span class="step-n">1</span>
+      <h3>Find an event</h3>
+      <p>Search the list or open the calendar to see what is happening each day.</p>
+    </li>
+    <li class="step" style="--tone: var(--yellow)">
+      <span class="step-n">2</span>
+      <h3>Register</h3>
+      <p>Join in one click. For paid events, pay securely by card.</p>
+    </li>
+    <li class="step" style="--tone: var(--green)">
+      <span class="step-n">3</span>
+      <h3>Show up</h3>
+      <p>Your registration and receipt stay in your space, ready to print.</p>
+    </li>
+  </ol>
+</section>
+
+<!-- ===== final call to action ===== -->
+<section class="final">
+  <div>
+    <h2>Ready for your next event?</h2>
+    <p>Join the community, or publish your own event.</p>
+  </div>
+  <div class="cta">
+    <a routerLink="/events" class="btn light">Browse events</a>
+    @if (!auth.currentAccount()) {
+      <a routerLink="/signup" class="btn outline">Sign up</a>
+    }
+  </div>
+</section>
+
+<!-- ===== footer ===== -->
+<footer class="foot">
+  <a class="brand" routerLink="/">
+    <svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 7l-5 5 5 5 M16 7l5 5-5 5 M13.5 5l-3 14" /></svg>
+    <span>Tunisia IT Events</span>
+  </a>
+  <nav>
+    <a routerLink="/events">Events</a>
+    <a routerLink="/calendar">Calendar</a>
+    <a routerLink="/login">Log in</a>
+    <a routerLink="/signup">Sign up</a>
+  </nav>
+  <p class="copy">&copy; {{ year }} Tunisia IT Events</p>
+</footer>

@@ -8,10 +8,12 @@ import { RegistrationApi } from '../../services/registration-api';
 import { Auth } from '../../services/auth';
 import { EventItem } from '../../models/event.models';
 import { Registration } from '../../models/registration.models';
+import { PaymentResult } from '../../models/payment.models';
+import { PaymentDialog } from '../../components/payment-dialog/payment-dialog';
 
 @Component({
   selector: 'app-event-detail',
-  imports: [RouterLink, DatePipe],
+  imports: [RouterLink, DatePipe, PaymentDialog],
   templateUrl: './event-detail.html',
   styleUrl: './event-detail.css'
 })
@@ -33,7 +35,14 @@ export class EventDetail {
   busy = signal(false);
   actionError = signal('');
 
+  // Fenêtre de paiement
+  paying = signal(false);
+  // Vrai quand la fenêtre vient d'être ouverte par le clic sur "Register" :
+  // si l'utilisateur la ferme sans payer, l'inscription en attente est annulée.
+  private abandonOnClose = signal(false);
+
   role = computed(() => this.auth.currentAccount()?.role ?? null);
+  isOnline = computed(() => this.event()?.paymentMode === 'ONLINE');
   placesLeft = computed(() => {
     const e = this.event();
     return e ? Math.max(e.capacity - this.taken(), 0) : 0;
@@ -61,6 +70,47 @@ export class EventDetail {
     this.run(this.regApi.register(this.eventId), reg => {
       this.myRegistration.set(reg);
       this.refreshCount();
+      // Événement payant en ligne : l'inscription n'est complète qu'après le paiement,
+      // donc on ouvre tout de suite le formulaire de carte.
+      if (reg.status === 'PENDING_PAYMENT') {
+        this.abandonOnClose.set(true);
+        this.paying.set(true);
+      }
+    });
+  }
+
+  // Bouton "Pay now" (inscription déjà en attente de paiement)
+  startPay(): void {
+    this.abandonOnClose.set(false);
+    this.paying.set(true);
+  }
+
+  onPaid(result: PaymentResult): void {
+    this.paying.set(false);
+    this.abandonOnClose.set(false);
+    this.actionError.set(
+      result.registrationConfirmed
+        ? ''
+        : 'Payment received. Your registration will be confirmed in a moment: refresh the page.'
+    );
+    this.loadMyRegistration();
+    this.refreshCount();
+  }
+
+  // L'utilisateur ferme la fenêtre sans payer.
+  onPayClosed(): void {
+    this.paying.set(false);
+
+    if (!this.abandonOnClose()) return;
+    this.abandonOnClose.set(false);
+
+    const reg = this.myRegistration();
+    if (!reg) return;
+
+    // Pas de paiement : on annule l'inscription en attente.
+    this.run(this.regApi.cancel(reg.id), () => {
+      this.myRegistration.set(null);
+      this.refreshCount();
     });
   }
 
@@ -83,15 +133,19 @@ export class EventDetail {
   private loadRegistrationInfo(): void {
     this.refreshCount();
     if (this.role() !== 'USER') return;
+    this.loadMyRegistration();
+    this.regApi.favorites().subscribe({
+      next: list => this.isFavorite.set(list.some(f => f.eventId === this.eventId)),
+      error: () => {}
+    });
+  }
+
+  private loadMyRegistration(): void {
     this.regApi.mine().subscribe({
       next: list =>
         this.myRegistration.set(
           list.find(r => r.eventId === this.eventId && r.status !== 'CANCELLED') ?? null
         ),
-      error: () => {}
-    });
-    this.regApi.favorites().subscribe({
-      next: list => this.isFavorite.set(list.some(f => f.eventId === this.eventId)),
       error: () => {}
     });
   }

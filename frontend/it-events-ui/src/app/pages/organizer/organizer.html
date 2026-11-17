@@ -1,20 +1,40 @@
 <header class="bar">
-  <h1>My events</h1>
+  <a routerLink="/events" class="brand">
+    <span class="logo">&lt;/&gt;</span>
+    <span class="brand-name">Tunisia IT Events</span>
+  </a>
   <nav>
     <a routerLink="/events">Public site</a>
     <a routerLink="/profile">Profile</a>
-    <button type="button" (click)="auth.logout()" routerLink="/login">Log out</button>
+    <button type="button" class="logout" (click)="auth.logout()" routerLink="/login">Log out</button>
   </nav>
 </header>
 
 <main>
-  @if (error()) { <p class="error">{{ error() }}</p> }
+  <!-- page title -->
+  <section class="hero">
+    <div>
+      <p class="kicker">Organizer space</p>
+      <h1>My events</h1>
+      <p class="lede">
+        Create, edit and follow your events.
+        <span class="count">{{ events().length }} {{ events().length === 1 ? 'event' : 'events' }}</span>
+      </p>
+      <div class="circuit" aria-hidden="true"><i></i><b></b><i></i></div>
+    </div>
 
-  @if (!showForm()) {
-    <button type="button" class="primary" (click)="newEvent()">+ New event</button>
-  } @else {
+    @if (!showForm()) {
+      <button type="button" class="primary new" (click)="newEvent()">New event</button>
+    }
+  </section>
+
+  @if (error()) { <p class="error banner">{{ error() }}</p> }
+
+  <!-- form -->
+  @if (showForm()) {
     <form [formGroup]="form" (ngSubmit)="save()" class="form">
       <h2>{{ editingId() === null ? 'New event' : 'Edit event' }}</h2>
+      <p class="form-sub">Fill in the details below. Your event will be reviewed before it goes public.</p>
 
       <label>Title <input formControlName="title" /></label>
       <label>Description <textarea formControlName="description" rows="3"></textarea></label>
@@ -55,7 +75,8 @@
       }
 
       <div class="image-field">
-        <span>Image (optional): choose a file from your computer or paste a link</span>
+        <span class="image-title">Image (optional)</span>
+        <small>Choose a file from your computer or paste a link</small>
         <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" (change)="onFile($event)" />
         <input formControlName="image" placeholder="https://... (image link)" />
         @if (uploading()) { <small>Uploading...</small> }
@@ -68,7 +89,7 @@
         }
       </div>
 
-      <div class="actions">
+      <div class="actions form-actions">
         <button type="submit" class="primary" [disabled]="saving()">
           {{ saving() ? 'Saving...' : 'Save' }}
         </button>
@@ -77,24 +98,37 @@
     </form>
   }
 
+  <!-- list -->
   @if (loading()) {
-    <p>Loading...</p>
+    <p class="state">Loading...</p>
   } @else if (events().length === 0) {
-    <p>You have no events yet.</p>
+    <div class="empty">
+      <span class="empty-mark">&lt;/&gt;</span>
+      <p>You have no events yet.</p>
+    </div>
   } @else {
     <section class="list">
       @for (e of events(); track e.id) {
-        <article class="item">
-          <div>
-            <span class="badge" [class]="'badge ' + e.status.toLowerCase()">{{ e.status }}</span>
+        <article [class]="'item ' + e.status.toLowerCase()">
+          <div class="when">
+            <span class="day">{{ e.startDate | date: 'd' }}</span>
+            <span class="month">{{ e.startDate | date: 'MMM y' }}</span>
+          </div>
+
+          <div class="body">
+            <span [class]="'badge ' + e.status.toLowerCase()">{{ e.status }}</span>
             <h3>{{ e.title }}</h3>
-            <p>{{ e.startDate | date: 'EEE d MMM y, HH:mm' }} · {{ e.city }}</p>
+            <p class="meta">{{ e.startDate | date: 'EEE d MMM y, HH:mm' }} · {{ e.city }}</p>
             @if (e.status === 'REJECTED' && e.rejectReason) {
               <p class="reason">Rejected: {{ e.rejectReason }}</p>
             }
           </div>
+
           <div class="actions">
             <a class="participants-link" [routerLink]="['/organizer/events', e.id, 'participants']">Participants</a>
+            @if (e.paymentMode !== 'FREE') {
+              <a class="participants-link" [routerLink]="['/organizer/events', e.id, 'payments']">Payments</a>
+            }
             <button type="button" (click)="edit(e)">Edit</button>
             <button type="button" class="danger" (click)="remove(e)">Delete</button>
           </div>

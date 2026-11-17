@@ -1,56 +1,118 @@
 <a routerLink="/events" class="back">&larr; All events</a>
 
 @if (loading()) {
-  <p>Loading...</p>
+  <p class="state">Loading...</p>
 } @else if (error()) {
-  <p class="error">{{ error() }}</p>
+  <p class="state error">{{ error() }}</p>
 } @else if (event(); as e) {
-  <article>
-    @if (e.image) {
-      <img class="cover" [src]="e.image" [alt]="e.title" (error)="$any($event.target).hidden = true" />
-    }
-    <span class="tag">{{ e.eventType }} &middot; {{ e.domain }}</span>
-    <h1>{{ e.title }}</h1>
-    <p class="meta">
-      {{ e.startDate | date: 'EEEE d MMMM y, HH:mm' }} to {{ e.endDate | date: 'HH:mm' }}
-    </p>
-    <p class="meta">{{ e.city }} &middot; {{ e.address }}</p>
-    <p class="meta">Capacity: {{ e.capacity }} &middot; {{ placesLeft() }} places left</p>
-    <p class="price">{{ e.paymentMode === 'FREE' ? 'Free' : e.price + ' ' + e.currency }}</p>
-    <p>{{ e.description }}</p>
+  <article class="event">
 
-    <section class="reg-box">
-      @if (!auth.currentAccount()) {
-        <p>Log in as a participant to register for this event.</p>
-        <a routerLink="/login" class="btn">Log in</a>
-      } @else if (role() !== 'USER') {
-        <p class="muted">Only participants can register for events.</p>
-      } @else {
-        @if (myRegistration(); as r) {
-          @if (r.status === 'PENDING_PAYMENT') {
-            <p class="ok">You are registered. Your payment is still pending.</p>
-          } @else {
-            <p class="ok">You are registered to this event.</p>
+    <!-- LEFT: fanned poster stack + registration -->
+    <aside class="side">
+      <div class="stack">
+        <figure class="poster">
+          @if (e.image) {
+            <img [src]="e.image" [alt]="e.title" (error)="$any($event.target).hidden = true" />
           }
-          <button class="btn secondary" type="button" [disabled]="busy()" (click)="cancel()">
-            Cancel registration
-          </button>
-        } @else if (started()) {
-          <p class="muted">Registration is closed: this event has already started.</p>
-        } @else if (placesLeft() === 0) {
-          <p class="error">This event is full.</p>
+        </figure>
+      </div>
+
+      <section class="reg-box">
+        @if (!auth.currentAccount()) {
+          <p>Log in as a participant to register for this event.</p>
+          <a routerLink="/login" class="btn">Log in</a>
+        } @else if (role() !== 'USER') {
+          <p class="muted">Only participants can register for events.</p>
         } @else {
-          <button class="btn" type="button" [disabled]="busy()" (click)="register()">Register</button>
+          @if (myRegistration(); as r) {
+            @if (r.status === 'PENDING_PAYMENT') {
+              <p class="muted">
+                Your registration is not complete yet. Complete the payment to confirm your seat.
+              </p>
+              <button class="btn" type="button" [disabled]="busy()" (click)="startPay()">Pay now</button>
+            } @else {
+              <p class="ok">You are registered to this event.</p>
+            }
+            <button class="btn secondary" type="button" [disabled]="busy()" (click)="cancel()">
+              Cancel registration
+            </button>
+          } @else if (started()) {
+            <p class="muted">Registration is closed: this event has already started.</p>
+          } @else if (placesLeft() === 0) {
+            <p class="error">This event is full.</p>
+          } @else {
+            <button class="btn" type="button" [disabled]="busy()" (click)="register()">
+              {{ isOnline() ? 'Register and pay' : 'Register' }}
+            </button>
+          }
+
+          <button class="btn ghost" type="button" [disabled]="busy()" (click)="toggleFavorite()">
+            {{ isFavorite() ? 'Remove from favorites' : 'Add to favorites' }}
+          </button>
         }
 
-        <button class="btn ghost" type="button" [disabled]="busy()" (click)="toggleFavorite()">
-          {{ isFavorite() ? 'Remove from favorites' : 'Add to favorites' }}
-        </button>
-      }
+        @if (actionError()) {
+          <p class="error">{{ actionError() }}</p>
+        }
+      </section>
+    </aside>
 
-      @if (actionError()) {
-        <p class="error">{{ actionError() }}</p>
-      }
-    </section>
+    <!-- RIGHT -->
+    <div class="main">
+
+      <header class="hero">
+        <div class="name">
+          <div class="tags">
+            <span class="kicker">{{ e.eventType }} / {{ e.domain }}</span>
+          </div>
+          <h1>{{ e.title }}</h1>
+
+          <div class="price" [class.free]="e.paymentMode === 'FREE'">
+            <span class="price-label">Entry</span>
+            <span class="price-value">{{ e.paymentMode === 'FREE' ? 'Free' : e.price + ' ' + e.currency }}</span>
+          </div>
+        </div>
+
+        <div class="about">
+          <span class="label">About this event</span>
+          <p class="description">{{ e.description }}</p>
+        </div>
+      </header>
+
+      <!-- circuit-line details, like the login illustration -->
+      <ul class="trace">
+        <li class="yellow">
+          <span class="label">Date</span>
+          <span class="value">{{ e.startDate | date: 'EEEE d MMMM y' }}</span>
+        </li>
+        <li class="blue">
+          <span class="label">Time</span>
+          <span class="value">{{ e.startDate | date: 'HH:mm' }} to {{ e.endDate | date: 'HH:mm' }}</span>
+        </li>
+        <li class="pink">
+          <span class="label">Place</span>
+          <span class="value">{{ e.city }}</span>
+          <span class="sub">{{ e.address }}</span>
+        </li>
+        <li class="green">
+          <span class="label">Capacity</span>
+          <span class="value">{{ e.capacity }} seats</span>
+          <span class="sub">{{ placesLeft() }} places left</span>
+          <div class="squares" role="img" [attr.aria-label]="placesLeft() + ' places left out of ' + e.capacity">
+            <span class="fill" [style.width.%]="e.capacity ? ((e.capacity - placesLeft()) / e.capacity) * 100 : 0"></span>
+          </div>
+        </li>
+      </ul>
+    </div>
   </article>
+}
+
+@if (paying()) {
+  @if (myRegistration(); as r) {
+    <app-payment-dialog
+      [registrationId]="r.id"
+      [eventTitle]="event()?.title ?? ''"
+      (paid)="onPaid($event)"
+      (closed)="onPayClosed()" />
+  }
 }
