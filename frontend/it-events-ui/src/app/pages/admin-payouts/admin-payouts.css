@@ -1,0 +1,34 @@
+/* admin payouts: most of the style is in payout-shared.css */
+.filters { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 22px; }
+.filter {
+  all: unset; box-sizing: border-box; cursor: pointer;
+  padding: 8px 14px; border: 1px solid var(--ink); background: transparent;
+  font-size: 0.66rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  transition: background 0.2s, color 0.2s;
+}
+.filter:hover { background: var(--yellow); }
+.filter[aria-pressed='true'] { color: #fff; background: var(--ink); }
+.filter:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+.yes, .no { display: inline-block; padding: 3px 9px; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; border: 1px solid var(--ink); }
+.yes { background: var(--green); }
+.no { background: var(--pink); }
+
+.due-cell { font-weight: 700; }
+.due-cell::before { content: ''; display: inline-block; width: 10px; height: 10px; margin-right: 10px; background: var(--yellow); border: 1px solid var(--ink); }
+
+.confirm { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: flex-end; }
+.confirm span { font-size: 0.8rem; font-weight: 600; }
+.confirm input {
+  font: inherit; font-family: var(--mono); font-size: 0.82rem; width: 190px;
+  padding: 8px 10px; background: #fff; color: var(--ink); border: 1px solid var(--ink); border-radius: 0;
+}
+.confirm input:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; background: var(--yellow); }
+.bank { line-height: 1.45; white-space: normal; min-width: 190px; }
+.bank small { display: block; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+
+@media (max-width: 760px) {
+  .confirm { justify-content: flex-start; }
+  .actions { justify-content: flex-start; }
+}

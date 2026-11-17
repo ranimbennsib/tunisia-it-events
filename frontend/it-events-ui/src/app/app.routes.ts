@@ -41,6 +41,17 @@ export const routes: Routes = [
     canActivate: [roleGuard('ADMIN')]
   },
   {
+    path: 'admin/payouts',
+    loadComponent: () => import('./pages/admin-payouts/admin-payouts').then(m => m.AdminPayouts),
+    canActivate: [roleGuard('ADMIN')]
+  },
+  {
+    path: 'organizer/payouts',
+    loadComponent: () =>
+      import('./pages/organizer-payouts/organizer-payouts').then(m => m.OrganizerPayouts),
+    canActivate: [roleGuard('ORGANIZER')]
+  },
+  {
     path: 'favorites',
     loadComponent: () => import('./pages/favorites/favorites').then(m => m.Favorites),
     canActivate: [roleGuard('USER')]
