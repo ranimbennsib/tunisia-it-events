@@ -12,7 +12,7 @@ function authenticate(req, res, next) {
 
   let payload;
   try {
-    payload = jwt.verify(token, config.jwtSecret, { algorithms: ['HS256'] });
+   payload = jwt.verify(token, config.jwtSecret, { algorithms: ['HS256', 'HS384', 'HS512'] });
   } catch (err) {
      console.warn('JWT verification failed:', err.message);
     throw new HttpError(401, 'Invalid or expired token');

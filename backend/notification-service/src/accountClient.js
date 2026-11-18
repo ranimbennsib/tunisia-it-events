@@ -25,5 +25,16 @@ async function getUserIds(page, size = 100) {
   if (!res.ok) throw new Error(`account-service a répondu ${res.status}`);
   return res.json();
 }
+// Identifiants des comptes ADMIN actifs : { ids: [...], last: true }
+async function getAdminIds() {
+  const res = await fetch(`${process.env.ACCOUNT_SERVICE_URL}/internal/accounts/admin-ids`, {
+    headers: { 'X-Internal-Key': process.env.INTERNAL_API_KEY },
+    signal: AbortSignal.timeout(10000),
+  });
 
-module.exports = { getContact, getUserIds };
+  if (!res.ok) throw new Error(`account-service a répondu ${res.status}`);
+  return res.json();
+}
+
+module.exports = { getContact, getUserIds, getAdminIds };
+

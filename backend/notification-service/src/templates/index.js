@@ -131,6 +131,56 @@ function buildEmail(type, variables = {}) {
         ),
       };
     }
+    //payment 
+            case 'PAYMENT_RECEIVED': {
+      const paidAt = variables.paidAt
+        ? `<p><b>Date:</b> ${escapeHtml(String(variables.paidAt).replace('T', ' ').slice(0, 16))} (UTC)</p>`
+        : '';
+      return {
+        subject: `Payment received: "${variables.eventTitle || 'your event'}"`,
+        html: layout(
+          `${hello}<p>We have received your payment for <b>${title || 'your event'}</b>. Thank you!</p>` +
+            (variables.registrationConfirmed === 'true' ? `<p>Your registration is now confirmed.</p>` : '') +
+            `<p><b>Receipt</b></p>` +
+            (variables.amount ? `<p><b>Amount:</b> ${escapeHtml(variables.amount)}</p>` : '') +
+            (variables.method ? `<p><b>Payment method:</b> ${escapeHtml(variables.method)}</p>` : '') +
+            (variables.reference ? `<p><b>Reference:</b> ${escapeHtml(variables.reference)}</p>` : '') +
+            paidAt
+        ),
+      };
+    }
+
+    case 'PAYMENT_FAILED': {
+      const reasons = {
+        card_declined: 'Your card was declined by the bank.',
+        insufficient_funds: 'Your card has insufficient funds.',
+        processing_error: 'A processing error occurred. Please try again.',
+        not_a_test_card: 'This card is not accepted.',
+      };
+      const reason = Object.hasOwn(reasons, variables.failureReason)
+        ? reasons[variables.failureReason]
+        : 'The payment was declined.';
+      return {
+        subject: `Payment failed: "${variables.eventTitle || 'your event'}"`,
+        html: layout(
+          `${hello}<p>Your payment for <b>${title || 'your event'}</b> could not be completed.</p>` +
+            `<p><b>Reason:</b> ${escapeHtml(reason)}</p>` +
+            (variables.amount ? `<p><b>Amount:</b> ${escapeHtml(variables.amount)}</p>` : '') +
+            `<p>No money has been taken. You can try again with another card.</p>`
+        ),
+      };
+    }
+
+    case 'PAYMENT_REFUNDED':
+      return {
+        subject: `Payment refunded: "${variables.eventTitle || 'your event'}"`,
+        html: layout(
+          `${hello}<p>Your payment for <b>${title || 'your event'}</b> has been refunded.</p>` +
+            (variables.amount ? `<p><b>Amount refunded:</b> ${escapeHtml(variables.amount)}</p>` : '') +
+            (variables.reference ? `<p><b>Reference:</b> ${escapeHtml(variables.reference)}</p>` : '') +
+            `<p>It may take a few days for the refund to appear on your statement.</p>`
+        ),
+      };
 
     default:
       throw new Error(`Unknown email type: ${type}`);

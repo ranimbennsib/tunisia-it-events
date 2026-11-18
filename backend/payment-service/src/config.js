@@ -31,8 +31,11 @@ function buildConfig(env = process.env) {
       database: env.DB_NAME || 'payment_db',
       user: env.DB_USER || 'postgres',
       password: env.DB_PASSWORD
-    }
+    },
+    notificationServiceUrl: process.env.NOTIFICATION_SERVICE_URL,
+    internalApiKey: process.env.INTERNAL_API_KEY,
   };
+  
 }
 
 module.exports = { buildConfig };

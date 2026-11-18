@@ -53,6 +53,15 @@ public class AccountService {
                 PageRequest.of(safePage, safeSize, Sort.by("id")));
         return new AccountIdsResponse(result.getContent().stream().map(Account::getId).toList(),result.isLast());
     }
+    
+    @Transactional(readOnly = true)
+    public AccountIdsResponse getActiveAdminIds() {
+        Page<Account> result = accountRepository.search(Role.ADMIN, AccountStatus.ACTIVE, "",
+                PageRequest.of(0, 200, Sort.by("id")));
+        return new AccountIdsResponse(
+                result.getContent().stream().map(Account::getId).toList(),
+                result.isLast());
+    }
 
     @Transactional
     public AccountResponse update(Long id, UpdateAccountRequest request) {

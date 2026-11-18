@@ -27,4 +27,9 @@ public class InternalAccountController {
                                                       @RequestParam(defaultValue = "100") int size) {
         return ResponseEntity.ok(accountService.getActiveUserIds(page, size));
     }
+    
+    @GetMapping("/admin-ids")
+    public ResponseEntity<AccountIdsResponse> adminIds() {
+        return ResponseEntity.ok(accountService.getActiveAdminIds());
+    }
 }

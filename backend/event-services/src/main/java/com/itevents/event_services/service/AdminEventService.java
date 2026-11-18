@@ -12,6 +12,7 @@ import com.itevents.event_services.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.itevents.event_services.client.BroadcastClient;
+import com.itevents.event_services.client.InAppNotificationClient;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +20,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AdminEventService {
     
-        private final BroadcastClient broadcastClient;
+    private final InAppNotificationClient inAppClient;
+    private final BroadcastClient broadcastClient;
     private final EventRepository repository;
     private final EventMapper mapper;
     private final NotificationClient notificationClient;
@@ -47,7 +49,7 @@ public class AdminEventService {
         if (firstApproval) {
             broadcastClient.announceNewEvent(saved);
         }
-
+        inAppClient.resolveEventPending(saved.getId());
         return mapper.toResponse(saved);
     }
 

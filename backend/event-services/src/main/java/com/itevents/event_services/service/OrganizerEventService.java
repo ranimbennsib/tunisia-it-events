@@ -12,13 +12,14 @@ import com.itevents.event_services.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.itevents.event_services.client.RegistrationClient;
+import com.itevents.event_services.client.InAppNotificationClient;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class OrganizerEventService {
-
+    private final InAppNotificationClient inAppClient;
     private final EventRepository repository;
     private final EventMapper mapper;
     private final RegistrationClient registrationClient;
@@ -28,7 +29,11 @@ public class OrganizerEventService {
         mapper.apply(event, request);
         event.setOrganizerId(organizerId);
         event.setStatus(EventStatus.PENDING);   // toujours validé par un administrateur
-        return mapper.toResponse(repository.save(event));
+        Event saved = repository.save(event);
+
+        inAppClient.notifyAdminsEventPending(saved.getId(), saved.getTitle(), false);
+
+        return mapper.toResponse(saved);
     }
 
     public EventResponse update(Long organizerId, Long eventId, EventRequest request) {
@@ -43,8 +48,8 @@ public class OrganizerEventService {
         event.setStatus(EventStatus.PENDING);   // à revalider après modification
         event.setRejectReason(null);
         event.setReviewedBy(null);
-                Event saved = repository.save(event);
-
+         Event saved = repository.save(event);
+         inAppClient.notifyAdminsEventPending(saved.getId(), saved.getTitle(), true);
         if (mayHaveRegistrants) {
             registrationClient.notifyEventUpdated(saved.getId(), saved.getTitle());
         }
