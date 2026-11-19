@@ -181,6 +181,49 @@ function buildEmail(type, variables = {}) {
             `<p>It may take a few days for the refund to appear on your statement.</p>`
         ),
       };
+          case 'PAYOUT_SCHEDULED':
+      return {
+        subject: 'Payout scheduled: ' + (variables.amount || 'your earnings'),
+        html: layout(
+          `${hello}<p>A payout has been scheduled for you. The bank transfer will be sent soon, and you will receive another email as soon as it is sent.</p>` +
+            (variables.amount ? `<p><b>Amount:</b> ${escapeHtml(variables.amount)}</p>` : '') +
+            (variables.paymentsCount ? `<p><b>Payments included:</b> ${escapeHtml(variables.paymentsCount)}</p>` : '') +
+            (variables.bank ? `<p><b>Bank account:</b> ${escapeHtml(variables.bank)}</p>` : '') +
+            (variables.payoutId ? `<p><b>Payout number:</b> ${escapeHtml(variables.payoutId)}</p>` : '')
+        ),
+      };
+
+    case 'PAYOUT_SENT': {
+      const paidAt = variables.paidAt
+        ? `<p><b>Date:</b> ${escapeHtml(String(variables.paidAt).replace('T', ' ').slice(0, 16))} (UTC)</p>`
+        : '';
+      return {
+        subject: 'Payout sent: ' + (variables.amount || 'your earnings'),
+        html: layout(
+          `${hello}<p>Good news! Your payout has been sent to your bank account.</p>` +
+            (variables.amount ? `<p><b>Amount:</b> ${escapeHtml(variables.amount)}</p>` : '') +
+            (variables.bank ? `<p><b>Bank account:</b> ${escapeHtml(variables.bank)}</p>` : '') +
+            (variables.bankReference ? `<p><b>Transfer reference:</b> ${escapeHtml(variables.bankReference)}</p>` : '') +
+            (variables.paymentsCount ? `<p><b>Payments included:</b> ${escapeHtml(variables.paymentsCount)}</p>` : '') +
+            paidAt +
+            `<p>It may take a few days for the money to appear on your account.</p>`
+        ),
+      };
+    }
+
+    case 'PAYOUT_FAILED': {
+      const reasons = {
+        no_bank_account:
+          'We could not send your payout because no bank account is registered on your profile. Please add your bank details (account holder, bank name and IBAN) so that we can pay you.',
+      };
+      const reason = Object.hasOwn(reasons, variables.failureReason)
+        ? reasons[variables.failureReason]
+        : 'We could not send your payout. Please check your bank details or contact the platform administrator.';
+      return {
+        subject: 'Action needed: we could not send your payout',
+        html: layout(`${hello}<p>${escapeHtml(reason)}</p>`),
+      };
+    }
 
     default:
       throw new Error(`Unknown email type: ${type}`);

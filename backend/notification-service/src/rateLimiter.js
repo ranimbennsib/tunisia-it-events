@@ -1,7 +1,7 @@
 const HOUR = 60 * 60 * 1000;
 
 const LIMITS = {
-  ACCOUNT_CREATED: { max: 1, windowMs: 24 * HOUR },
+  ACCOUNT_CREATED: { max: 2, windowMs: 24 * HOUR },
 };
 const DEFAULT_LIMIT = { max: 10, windowMs: HOUR };
 

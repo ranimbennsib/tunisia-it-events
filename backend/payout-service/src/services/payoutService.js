@@ -89,8 +89,28 @@ function payoutView(row, items) {
 }
 
 const STATUSES = ['linking', 'pending', 'paid', 'cancelled'];
+function formatAmount(millimes, currency) {
+  return `${(Number(millimes) / 1000).toFixed(3)} ${currency || 'TND'}`;
+}
 
-function createPayoutService({ repository, paymentClient }) {
+function createPayoutService({ repository, paymentClient, notify=null,adminNotify = null }) {
+  function safeNotify(organizerId, type, variables) {
+    if (typeof notify !== 'function') return;
+    try {
+      notify(Number(organizerId), type, variables);
+    } catch (error) {
+      console.error(`Notification ${type} not sent for organizer ${organizerId}:`, error.message);
+    }
+  }
+  function safeAdmin(fn) {
+    if (!adminNotify) return;
+    try {
+      fn(adminNotify);
+    } catch (error) {
+      console.error('Admin notification not sent:', error.message);
+    }
+  }
+  
   function toId(value, label) {
     const n = Number(value);
     if (!Number.isSafeInteger(n) || n <= 0) {
@@ -236,6 +256,19 @@ function createPayoutService({ repository, paymentClient }) {
     }
 
     const updated = await repository.markLinked(payout.id);
+     // Email « virement programmé », seulement par l'appel qui l'a vraiment passé à pending
+    // (un appel parallèle qui le trouve déjà pending n'envoie rien : pas de doublon).
+    if (updated) {
+      safeNotify(updated.organizer_id, 'PAYOUT_SCHEDULED', {
+        payoutId: updated.id,
+        amount: formatAmount(updated.net_amount, updated.currency),
+        paymentsCount: updated.payments_count,
+        bank: `${updated.bank_name} - ${maskIban(updated.iban)}`
+      });
+      
+      // Notification dans l'application : les admins doivent envoyer puis confirmer le virement.
+      safeAdmin((admin) => admin.payoutToConfirm(updated.id, updated.net_amount, updated.currency));
+    }
     // Already moved to pending by a parallel retry: read it again.
     return updated || (await repository.findById(payout.id));
   }
@@ -245,6 +278,7 @@ function createPayoutService({ repository, paymentClient }) {
 
     const account = await repository.findAccountByOrganizer(organizerId);
     if (!account) {
+      safeNotify(organizerId, 'PAYOUT_FAILED', { failureReason: 'no_bank_account' });
       throw createServiceError(409, 'This organizer has not registered a bank account yet');
     }
 
@@ -334,6 +368,17 @@ function createPayoutService({ repository, paymentClient }) {
     if (!updated) {
       throw createServiceError(409, 'This payout was already handled by someone else');
     }
+        // Email « virement effectué » (jamais l'IBAN complet : banque + IBAN masqué)
+    safeNotify(updated.organizer_id, 'PAYOUT_SENT', {
+      payoutId: updated.id,
+      amount: formatAmount(updated.net_amount, updated.currency),
+      paymentsCount: updated.payments_count,
+      bank: `${updated.bank_name} - ${maskIban(updated.iban)}`,
+      bankReference: updated.bank_reference,
+      paidAt: new Date(updated.paid_at || Date.now()).toISOString()
+    });
+    // Le virement est confirmé : la notification des admins passe en « lue ».
+    safeAdmin((admin) => admin.payoutConfirmed(updated.id));
     return payoutView(updated, await repository.findItems(id));
   }
 

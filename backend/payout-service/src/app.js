@@ -20,7 +20,7 @@ function createApp(config, deps = {}) {
       internalKey: config.internalKey
     });
   const payoutService =
-    deps.payoutService || createPayoutService({ repository, paymentClient });
+    deps.payoutService || createPayoutService({ repository, paymentClient,  notify: deps.notify || null,adminNotify: deps.adminNotify || null});
 
   const app = express();
   app.disable('x-powered-by');

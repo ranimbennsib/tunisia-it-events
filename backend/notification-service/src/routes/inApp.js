@@ -20,6 +20,7 @@ const format = (row) => ({
   type: row.type,
   message: row.message,
   eventId: row.event_id === null ? null : Number(row.event_id),
+  payoutId: row.payout_id === null || row.payout_id === undefined ? null : Number(row.payout_id),
   read: row.is_read,
   sentAt: row.sent_at,
 });
@@ -31,7 +32,7 @@ router.get('/', handle(async (req, res) => {
   const unreadOnly = req.query.unreadOnly === 'true';
 
   const rows = await pool.query(
-    `SELECT id, type, message, event_id, is_read, sent_at
+    `SELECT id, type, message, event_id,payout_id, is_read, sent_at
      FROM notification
      WHERE account_id = $1 AND ($2::boolean = false OR is_read = false)
      ORDER BY sent_at DESC, id DESC
@@ -80,7 +81,7 @@ router.patch('/:id/read', handle(async (req, res) => {
   const result = await pool.query(
     `UPDATE notification SET is_read = true
      WHERE id = $1 AND account_id = $2
-     RETURNING id, type, message, event_id, is_read, sent_at`,
+     RETURNING id, type, message, event_id,payout_id, is_read, sent_at`,
     [id, req.user.id]
   );
 
