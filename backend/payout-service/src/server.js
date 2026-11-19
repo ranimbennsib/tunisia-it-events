@@ -1,10 +1,11 @@
 require('dotenv').config();
 
+const { createAdminNotifier } = require('./adminNotifier');
 const { buildConfig } = require('./config');
 const createApp = require('./app');
 const { createPool } = require('./db/pool');
 const { migrate } = require('./db/migrate');
-
+const { createNotificationClient } = require('./notificationClient');
 async function main() {
   const config = buildConfig();
   const db = createPool(config.db);
@@ -25,7 +26,17 @@ async function main() {
     throw err;
   }
 
-  const app = createApp(config, { db });
+    // Emails (payout scheduled, sent, failed) : actif seulement si l'URL et la clé sont configurées.
+  const notify = createNotificationClient({
+    baseUrl: process.env.NOTIFICATION_SERVICE_URL,
+    internalKey: process.env.NOTIFICATION_INTERNAL_KEY
+  });
+  const adminNotify = createAdminNotifier({
+    baseUrl: process.env.NOTIFICATION_SERVICE_URL,
+    internalKey: process.env.NOTIFICATION_INTERNAL_KEY
+  });
+
+  const app = createApp(config, { db, notify, adminNotify });
 
   const server = app.listen(config.port, () => {
     console.log(`payout-service listening on http://localhost:${config.port}`);

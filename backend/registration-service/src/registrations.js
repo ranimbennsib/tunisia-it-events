@@ -3,9 +3,19 @@ const { pool } = require('./db');
 const { authenticate, requireRole } = require('./auth');
 const { HttpError } = require('./errors');
 const { getEvent } = require('./eventClient');
-
+const { sendNotification } = require('./notificationClient');
 const router = express.Router();
-
+// Prévient la personne que son inscription est annulée (en arrière-plan).
+async function notifyCancelled(registration) {
+  let title = '';
+  try {
+    const event = await getEvent(registration.event_id);
+    title = (event && event.title) || '';
+  } catch (err) {
+    // titre indisponible : l'email sera envoyé avec un texte générique
+  }
+  sendNotification(registration.account_id, 'REGISTRATION_CANCELLED', { eventTitle: title });
+}
 // GET /api/registrations/me  (any logged-in user)
 router.get('/me', authenticate, async (req, res) => {
   const result = await pool.query(
@@ -74,6 +84,15 @@ router.post('/', authenticate, requireRole('USER'), async (req, res) => {
   }
 
   res.status(201).json(saved.rows[0]);
+    // 8. confirmation email (only when the registration is really confirmed)
+  if (status === 'CONFIRMED') {
+    sendNotification(req.user.id, 'REGISTRATION_CONFIRMED', {
+      eventTitle: event.title,
+      eventDate: event.startDate,
+      eventCity: event.city,
+      eventAddress: event.address,
+    });
+  }
 });
 
 // GET /api/registrations/event/:id/count  (public)
@@ -134,6 +153,8 @@ router.delete('/:id', authenticate, async (req, res) => {
     throw new HttpError(404, 'Registration not found');
   }
   res.json(result.rows[0]);
+    // cancellation email (in the background)
+  notifyCancelled(result.rows[0]);
 });
 
 module.exports = router;

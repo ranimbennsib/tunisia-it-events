@@ -19,16 +19,48 @@ import com.itevents.accountservice.entity.Role;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import com.itevents.accountservice.dto.AccountContactResponse;
+import com.itevents.accountservice.client.NotificationClient;
+import com.itevents.accountservice.client.NotificationType;
+import java.util.Map;
+import com.itevents.accountservice.dto.AccountIdsResponse;
+import org.springframework.data.domain.Page;
 @Service
 @RequiredArgsConstructor
 public class AccountService {
 
     private final AccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
-
+    private final NotificationClient notificationClient;
+    
+    // date d'envoi de l'email de bienvenue (vide = pas encore envoyé)
+    
     @Transactional(readOnly = true)
     public AccountResponse getById(Long id) {
         return AccountResponse.from(findOrThrow(id));
+    }
+    //nouveaux pour notif
+        @Transactional(readOnly = true)
+    public AccountContactResponse getContact(Long id) {
+        Account account = findOrThrow(id);
+        return new AccountContactResponse(account.getId(), account.getFirstName(), account.getEmail());
+    }
+        @Transactional(readOnly = true)
+    public AccountIdsResponse getActiveUserIds(int page, int size) {
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.min(Math.max(size, 1), 200);
+        Page<Account> result = accountRepository.search(Role.USER, AccountStatus.ACTIVE, "",
+                PageRequest.of(safePage, safeSize, Sort.by("id")));
+        return new AccountIdsResponse(result.getContent().stream().map(Account::getId).toList(),result.isLast());
+    }
+    
+    @Transactional(readOnly = true)
+    public AccountIdsResponse getActiveAdminIds() {
+        Page<Account> result = accountRepository.search(Role.ADMIN, AccountStatus.ACTIVE, "",
+                PageRequest.of(0, 200, Sort.by("id")));
+        return new AccountIdsResponse(
+                result.getContent().stream().map(Account::getId).toList(),
+                result.isLast());
     }
 
     @Transactional
@@ -60,6 +92,7 @@ public class AccountService {
 
         account.setPassword(passwordEncoder.encode(request.newPassword()));
         accountRepository.save(account);
+        notificationClient.send(account.getId(), NotificationType.PASSWORD_CHANGED, Map.of());
     }
     @Transactional(readOnly = true)
     public PageResponse<AccountResponse> search(Role role, AccountStatus status,
@@ -84,8 +117,20 @@ public class AccountService {
             throw new OperationNotAllowedException("The status of an admin account cannot be changed");
         }
 
+        boolean wasActive = target.getAccountStatus() == AccountStatus.ACTIVE;
+        boolean isActive = status == AccountStatus.ACTIVE;
+
         target.setAccountStatus(status);
-        return AccountResponse.from(accountRepository.save(target));
+        Account saved = accountRepository.save(target);
+
+        // email seulement quand le compte devient actif ou cesse de l'être
+        if (wasActive != isActive) {
+            notificationClient.send(saved.getId(),
+                    isActive ? NotificationType.ACCOUNT_ACTIVATED : NotificationType.ACCOUNT_DEACTIVATED,
+                    Map.of());
+        }
+
+        return AccountResponse.from(saved);
     }
     private Account findOrThrow(Long id) {
         return accountRepository.findById(id)

@@ -47,4 +47,5 @@ public class Account {
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
+    
 }

@@ -40,7 +40,9 @@ function createApp(config, deps = {}) {
 
       // Optionnelle : confirme l'inscription après un paiement réussi.
       confirmRegistration: deps.confirmRegistration || null,
-
+      
+      // Optionnelle : demande un email à notification-service.
+      notify: deps.notify || null,
       commissionRate: config.paymentCommissionRate
     });
 

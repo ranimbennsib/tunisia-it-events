@@ -54,7 +54,7 @@ public class Event {
 
     private Long organizerId;       // Organizer (account-service) : "organizes"
     private Long reviewedBy;        // Administrator (account-service) : "reviews"
-
+    private LocalDateTime announcedAt; 
     @PrePersist
     void onCreate() {
         createdAt = LocalDateTime.now();

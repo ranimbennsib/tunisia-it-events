@@ -25,4 +25,6 @@ module.exports = {
     password: process.env.DB_PASSWORD,
   },
   eventServiceUrl: process.env.EVENT_SERVICE_URL,
+  notificationServiceUrl: process.env.NOTIFICATION_SERVICE_URL,
+  internalApiKey: process.env.INTERNAL_API_KEY,
 };

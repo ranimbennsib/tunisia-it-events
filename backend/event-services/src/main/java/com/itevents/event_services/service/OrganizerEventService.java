@@ -11,24 +11,29 @@ import com.itevents.event_services.mapper.EventMapper;
 import com.itevents.event_services.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
+import com.itevents.event_services.client.RegistrationClient;
+import com.itevents.event_services.client.InAppNotificationClient;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class OrganizerEventService {
-
+    private final InAppNotificationClient inAppClient;
     private final EventRepository repository;
     private final EventMapper mapper;
-
+    private final RegistrationClient registrationClient;
     public EventResponse create(Long organizerId, EventRequest request) {
         validate(request);
         Event event = new Event();
         mapper.apply(event, request);
         event.setOrganizerId(organizerId);
         event.setStatus(EventStatus.PENDING);   // toujours validé par un administrateur
-        return mapper.toResponse(repository.save(event));
+        Event saved = repository.save(event);
+
+        inAppClient.notifyAdminsEventPending(saved.getId(), saved.getTitle(), false);
+
+        return mapper.toResponse(saved);
     }
 
     public EventResponse update(Long organizerId, Long eventId, EventRequest request) {
@@ -37,16 +42,45 @@ public class OrganizerEventService {
             throw new IllegalStateException("Impossible de modifier un événement terminé");
         }
         validate(request);
+                // seuls les événements approuvés peuvent avoir des inscrits
+        boolean mayHaveRegistrants = event.getStatus() == EventStatus.APPROVED;
         mapper.apply(event, request);
         event.setStatus(EventStatus.PENDING);   // à revalider après modification
         event.setRejectReason(null);
         event.setReviewedBy(null);
-        return mapper.toResponse(repository.save(event));
+         Event saved = repository.save(event);
+         inAppClient.notifyAdminsEventPending(saved.getId(), saved.getTitle(), true);
+        if (mayHaveRegistrants) {
+            registrationClient.notifyEventUpdated(saved.getId(), saved.getTitle());
+        }
+        return mapper.toResponse(saved);
     }
 
-    public void delete(Long organizerId, Long eventId) {
-        // TODO plus tard : interdire la suppression s'il existe des inscriptions (registration-service)
-        repository.delete(findOwned(organizerId, eventId));
+            public void delete(Long organizerId, Long eventId) {
+        Event event = findOwned(organizerId, eventId);
+
+        // seuls les événements approuvés peuvent avoir des inscrits
+        boolean mayHaveRegistrants = event.getStatus() == EventStatus.APPROVED;
+        int activeRegistrations = mayHaveRegistrants
+                ? registrationClient.countActiveRegistrations(eventId)
+                : 0;
+
+        // payant en ligne avec inscrits : suppression refusée (remboursements à gérer)
+        if (event.getPaymentMode() == PaymentMode.ONLINE && activeRegistrations > 0) {
+            throw new IllegalStateException(
+                    "This paid event has registrations and cannot be deleted");
+        }
+
+        Long id = event.getId();
+        String title = event.getTitle();
+        boolean upcoming = event.getEndDate().isAfter(LocalDateTime.now());
+
+        repository.delete(event);
+
+        // gratuit ou sur place : on prévient les inscrits (seulement si l'événement n'est pas terminé)
+        if (activeRegistrations > 0 && upcoming) {
+            registrationClient.notifyEventCancelled(id, title);
+        }
     }
 
     public EventResponse getOne(Long organizerId, Long eventId) {

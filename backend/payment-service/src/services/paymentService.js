@@ -1,7 +1,7 @@
 const paymentRepository = require('../repositories/paymentRepository');
 const { createBankSimulator } = require('../bank/simulator');
 const { InvalidCardError } = require('../bank/errors');
-
+const { sendNotification } = require('../notificationClient');
 // Erreur métier avec un code HTTP
 function createServiceError(statusCode, message) {
   const error = new Error(message);
@@ -23,6 +23,13 @@ function calculateAmounts(amount, commissionRate) {
   };
 }
 
+//*
+// 45000 millimes -> "45.000 TND"
+function formatAmount(millimes, currency) {
+  return `${(Number(millimes) / 1000).toFixed(3)} ${currency || 'TND'}`;
+}
+
+
 function createPaymentService({
   repository = paymentRepository,
   simulator = createBankSimulator(),
@@ -33,7 +40,7 @@ function createPaymentService({
 
   // Optionnelle : confirme l'inscription après un paiement réussi.
   confirmRegistration = null,
-
+  notify = null,
   commissionRate = Number(
     process.env.PAYMENT_COMMISSION_RATE || 5
   )
@@ -74,7 +81,19 @@ function createPaymentService({
       return false;
     }
   }
+   //*
+     // Demande un email sans jamais faire échouer le paiement.
+  function safeNotify(userId, type, variables) {
+    if (typeof notify !== 'function') {
+      return;
+    }
 
+    try {
+      notify(userId, type, variables);
+    } catch (error) {
+      console.error(`Notification ${type} not sent for user ${userId}:`, error.message);
+    }
+  }
   // Créer un paiement
   async function createPayment({ userId, registrationId, card }) {
 
@@ -257,6 +276,19 @@ function createPaymentService({
         // Si le Registration Service est indisponible, le paiement reste valide.
         const registrationConfirmed =
           await tryConfirmRegistration(registrationId, payment.id);
+          //*
+        // Reçu par email (jamais le numéro de carte : seulement la marque et les 4 derniers chiffres)
+        safeNotify(userId, 'PAYMENT_RECEIVED', {
+          eventTitle: event.title,
+          amount: formatAmount(amount, event.currency),
+          method: `${result.brand} card ending in ${result.last4}`,
+          reference: result.transactionRef,
+          paidAt: new Date(
+            (updatedPayment && updatedPayment.paid_at) || Date.now()
+          ).toISOString(),
+          registrationConfirmed: String(registrationConfirmed)
+        });
+
 
         return {
           success: true,
@@ -276,7 +308,13 @@ function createPaymentService({
           result.brand,
           result.last4
         );
-
+         //*
+         // Email d'échec (refus de la banque). Une carte mal saisie n'envoie pas d'email.
+        safeNotify(userId, 'PAYMENT_FAILED', {
+          eventTitle: event.title,
+          amount: formatAmount(amount, event.currency),
+          failureReason: result.reason || 'payment_declined'
+        });
         return {
           success: false,
           message: 'Payment declined',
@@ -313,6 +351,7 @@ function createPaymentService({
       throw error;
     }
   }
+  
 
   // Historique d'un participant
   async function getMyPayments(userId) {

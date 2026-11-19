@@ -14,6 +14,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import java.io.IOException;
 import java.time.Instant;
 
+import com.itevents.accountservice.security.InternalKeyFilter;
+import org.springframework.beans.factory.annotation.Value;
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
@@ -21,7 +23,7 @@ public class SecurityConfig {
     private final JwtService jwtService;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http,@Value("${notification.internal-key}") String internalKey) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -30,6 +32,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/login",
                                 "/api/auth/register",
                                 "/api/auth/refresh").permitAll()
+                        .requestMatchers("/internal/**").hasRole("INTERNAL")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .exceptionHandling(e -> e
@@ -38,6 +41,8 @@ public class SecurityConfig {
                         .accessDeniedHandler((req, res, ex) ->
                                 writeError(res, 403, "Access denied")))
                 .addFilterBefore(new JwtAuthenticationFilter(jwtService),
+                        UsernamePasswordAuthenticationFilter.class)
+                        .addFilterBefore(new InternalKeyFilter(internalKey),
                         UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

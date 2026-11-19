@@ -4,7 +4,7 @@ const { buildConfig } = require('./config');
 const createApp = require('./app');
 const { createPool } = require('./db/pool');
 const { migrate } = require('./db/migrate');
-
+const { createNotificationClient } = require('./notificationClient');
 // ============================================================
 // Appels vers les autres microservices
 // ============================================================
@@ -123,13 +123,18 @@ async function main() {
 
     throw err;
   }
-
+// Emails (reçu, échec...) : actif seulement si l'URL et la clé sont configurées.
+  const notify = createNotificationClient({
+    baseUrl: process.env.NOTIFICATION_SERVICE_URL,
+    internalKey: process.env.NOTIFICATION_INTERNAL_KEY
+  });
   // Injection des dépendances dans le Payment Service.
   const app = createApp(config, {
     db,
     getRegistrationById,
     confirmRegistration,
-    getEventById
+    getEventById,
+    notify
   });
 
   const server = app.listen(config.port, () => {

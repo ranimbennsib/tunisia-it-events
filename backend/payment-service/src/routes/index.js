@@ -280,6 +280,23 @@ function createRoutes(config, paymentService) {
   router.get('/internal/ping', internal, (req, res) => {
     res.json({ ok: true, service: 'payment-service' });
   });
+  //nouvelle route pour le notif 
+    router.post(
+    '/internal/payments/registrations/:registrationId/refund',
+    internal,
+    async (req, res) => {
+      try {
+        const result = await paymentService.refundByRegistration(req.params.registrationId);
+        return res.status(200).json({
+          success: true,
+          alreadyRefunded: result.alreadyRefunded,
+          payment: formatPayment(result.payment)
+        });
+      } catch (error) {
+        return handleError(req, res, error);
+      }
+    }
+  );
 
   // Paiements réussis pas encore versés. Filtre optionnel : ?organizerId=8
   router.get('/internal/payments/unpaid', internal, async (req, res) => {
