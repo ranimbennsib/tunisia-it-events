@@ -4,11 +4,13 @@
     <span class="brand-name">Tunisia IT Events</span>
   </a>
   <nav>
+    <app-notification-bell (selected)="onNotification($event)" />
     <a routerLink="/admin/payments">Payments</a>
     <a routerLink="/admin/payouts">Payouts</a>
     <a routerLink="/events">Public site</a>
     <a routerLink="/profile">Profile</a>
     <button type="button" class="logout" (click)="auth.logout()" routerLink="/login">Log out</button>
+    
   </nav>
 </header>
 
