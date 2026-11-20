@@ -6,10 +6,11 @@ import { forkJoin } from 'rxjs';
 import { Auth } from '../../services/auth';
 import { EventApi } from '../../services/event-api';
 import { EventItem, EventStatus } from '../../models/event.models';
-
+import { AppNotification } from '../../models/notification.models';
+import { NotificationBell } from '../../components/notification-bell/notification-bell';
 @Component({
   selector: 'app-admin',
-  imports: [RouterLink, DatePipe],
+  imports: [RouterLink, DatePipe, NotificationBell],
   templateUrl: './admin.html',
   styleUrl: './admin.css'
 })
@@ -39,7 +40,14 @@ export class Admin {
       error: err => { this.error.set(this.msg(err)); this.loading.set(false); }
     });
   }
-
+   //nouveau
+     // The admin clicked a notification: for an event to review, show the PENDING queue up to date.
+  onNotification(n: AppNotification): void {
+    if (n.type === 'EVENT_PENDING_REVIEW') {
+      this.filter.set('PENDING');
+      this.load();
+    }
+  }
   approve(e: EventItem): void {
     this.api.approve(e.id, this.auth.currentAccount()!.id).subscribe({
       next: () => this.load(),
