@@ -157,6 +157,22 @@ dd { margin: 0; font-family: var(--serif); font-size: 1.1rem; }
 .actions button.danger::after { content: '\00d7'; font-size: 1.3rem; letter-spacing: 0; }
 .actions button:hover { background: var(--ink); color: #fff; }
 
+/* Delete button on every card */
+.actions button.remove { background: transparent; color: #7a2323; border-color: #9b2c2c; }
+.actions button.remove::after { content: '\00d7'; font-size: 1.3rem; letter-spacing: 0; }
+.actions button.remove:hover { background: #9b2c2c; color: #fff; }
+.item.approved .actions, .item.rejected .actions { justify-content: center; }
+
+/* ---------- delete confirmation ---------- */
+.overlay { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(28, 35, 51, 0.45); }
+.modal { box-sizing: border-box; width: min(480px, 100%); padding: 34px 34px 30px; background: var(--paper); border: 1px solid var(--ink); }
+.modal .kicker { margin-bottom: 10px; }
+.modal h2 { margin: 0 0 14px; font-family: var(--serif); font-weight: 400; font-size: 2rem; line-height: 1.1; overflow-wrap: anywhere; }
+.modal p:not(.kicker) { margin: 0 0 26px; line-height: 1.6; color: rgba(28, 35, 51, 0.8); }
+.modal-actions { display: flex; justify-content: flex-end; gap: 12px; }
+.modal-actions .confirm { background: var(--pink); }
+.modal-actions .confirm:hover { background: #9b2c2c; border-color: #9b2c2c; color: #fff; }
+
 /* ---------- responsive ---------- */
 @media (max-width: 900px) {
   .item { grid-template-columns: 110px 1fr; }

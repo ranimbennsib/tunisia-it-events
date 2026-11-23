@@ -33,6 +33,11 @@ public class AdminAccountController {
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(accountService.search(role, status, search, page, size));
     }
+    @GetMapping("/{id}")
+    public ResponseEntity<AccountResponse> get(@PathVariable Long id) {
+        return ResponseEntity.ok(accountService.getById(id));
+    }
+
     @PatchMapping("/{id}/status")
     public ResponseEntity<AccountResponse> updateStatus(@PathVariable Long id,
                                                         @Valid @RequestBody UpdateStatusRequest request,

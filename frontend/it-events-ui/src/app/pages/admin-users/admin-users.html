@@ -1,0 +1,149 @@
+<header class="bar">
+  <a routerLink="/events" class="brand">
+    <span class="logo">&lt;/&gt;</span>
+    <span class="brand-name">Tunisia IT Events</span>
+  </a>
+  <nav>
+    <a routerLink="/admin">Events</a>
+    <a routerLink="/admin/users" class="here">Users</a>
+    <a routerLink="/admin/payments">Payments</a>
+    <a routerLink="/admin/payouts">Payouts</a>
+    <a routerLink="/events">Public site</a>
+    <a routerLink="/profile">Profile</a>
+    <button type="button" class="logout" (click)="auth.logout()" routerLink="/login">Log out</button>
+  </nav>
+</header>
+
+<main>
+  <section class="head">
+    <p class="kicker">Admin</p>
+    <h1>Users</h1>
+    <p class="lede">
+      Everyone who signed up, with their role and status.
+      @if (!loading()) { <span class="count">{{ total() }} {{ total() === 1 ? 'account' : 'accounts' }}</span> }
+    </p>
+    <div class="circuit" aria-hidden="true"><i></i><b></b><i></i></div>
+  </section>
+
+  <section class="filters">
+    <input type="search" placeholder="Search name or email..." aria-label="Search users"
+           [value]="search()" (input)="onSearch($any($event.target).value)" />
+
+    <select aria-label="Role" [value]="role()" (change)="setRole($any($event.target).value)">
+      <option value="">All roles</option>
+      @for (r of roles; track r) { <option [value]="r" [selected]="role() === r">{{ r }}</option> }
+    </select>
+
+    <select aria-label="Status" [value]="status()" (change)="setStatus($any($event.target).value)">
+      <option value="">All statuses</option>
+      @for (s of statuses; track s) { <option [value]="s" [selected]="status() === s">{{ s }}</option> }
+    </select>
+
+    <button type="button" class="reset" (click)="reset()">Reset</button>
+  </section>
+
+  @if (error()) { <p class="error banner">{{ error() }}</p> }
+
+  @if (loading()) {
+    <p class="state">Loading...</p>
+  } @else if (accounts().length === 0) {
+    <div class="empty">
+      <span class="empty-mark">&lt;/&gt;</span>
+      <p>No users match these filters.</p>
+    </div>
+  } @else {
+    <section class="rows">
+      @for (a of accounts(); track a.id) {
+        <article [class]="'row ' + a.accountStatus.toLowerCase()">
+          <div [class]="'avatar ' + a.role.toLowerCase()" aria-hidden="true">{{ initials(a) }}</div>
+
+          <div class="who">
+            <h3>{{ a.firstName }} {{ a.lastName }}</h3>
+            <p class="mail">{{ a.email }}</p>
+          </div>
+
+          <div class="tags">
+            <span [class]="'role ' + a.role.toLowerCase()">{{ a.role }}</span>
+            <span [class]="'status ' + a.accountStatus.toLowerCase()">{{ a.accountStatus }}</span>
+          </div>
+
+          <p class="since">Joined {{ a.createdAt | date: 'd MMM y' }}</p>
+
+          <div class="row-actions">
+            <button type="button" (click)="open(a)">Details</button>
+            @if (canToggle(a)) {
+              <button type="button" [class]="a.accountStatus === 'ACTIVE' ? 'danger' : 'primary'" (click)="ask(a)">
+                {{ a.accountStatus === 'ACTIVE' ? 'Deactivate' : 'Activate' }}
+              </button>
+            }
+          </div>
+        </article>
+      }
+    </section>
+
+    <nav class="pager" aria-label="Pages">
+      <button type="button" (click)="go(-1)" [disabled]="page() === 0">&larr; Previous</button>
+      <span>Page {{ page() + 1 }} of {{ pages() }}</span>
+      <button type="button" (click)="go(1)" [disabled]="page() + 1 >= pages()">Next &rarr;</button>
+    </nav>
+  }
+</main>
+
+<!-- details panel -->
+@if (selected(); as u) {
+  <div class="overlay" (click)="selected.set(null)">
+    <aside class="panel" role="dialog" aria-modal="true" aria-label="User details" (click)="$event.stopPropagation()">
+      <div class="panel-top">
+        <p class="kicker">User #{{ u.id }}</p>
+        <button type="button" class="close" (click)="selected.set(null)" aria-label="Close">&times;</button>
+      </div>
+
+      <div [class]="'avatar big ' + u.role.toLowerCase()" aria-hidden="true">{{ initials(u) }}</div>
+      <h2>{{ u.firstName }} {{ u.lastName }}</h2>
+      <div class="tags">
+        <span [class]="'role ' + u.role.toLowerCase()">{{ u.role }}</span>
+        <span [class]="'status ' + u.accountStatus.toLowerCase()">{{ u.accountStatus }}</span>
+      </div>
+
+      <dl class="details">
+        <div><dt>First name</dt><dd>{{ u.firstName }}</dd></div>
+        <div><dt>Last name</dt><dd>{{ u.lastName }}</dd></div>
+        <div><dt>Email</dt><dd>{{ u.email }}</dd></div>
+        <div><dt>Phone</dt><dd>{{ u.phoneNumber }}</dd></div>
+        <div><dt>Role</dt><dd>{{ u.role }}</dd></div>
+        <div><dt>Status</dt><dd>{{ u.accountStatus }}</dd></div>
+        <div><dt>Member since</dt><dd>{{ u.createdAt | date: 'EEEE d MMMM y, HH:mm' }}</dd></div>
+      </dl>
+
+      @if (canToggle(u)) {
+        <button type="button" [class]="'wide ' + (u.accountStatus === 'ACTIVE' ? 'danger' : 'primary')" (click)="ask(u)">
+          {{ u.accountStatus === 'ACTIVE' ? 'Deactivate this account' : 'Activate this account' }}
+        </button>
+      } @else {
+        <p class="note">The status of admin accounts, and of your own account, cannot be changed.</p>
+      }
+    </aside>
+  </div>
+}
+
+<!-- confirm dialog -->
+@if (confirm(); as c) {
+  <div class="overlay center" (click)="confirm.set(null)">
+    <div class="modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <p class="kicker">{{ c.accountStatus === 'ACTIVE' ? 'Deactivate account' : 'Activate account' }}</p>
+      <h2>{{ c.firstName }} {{ c.lastName }}</h2>
+      @if (c.accountStatus === 'ACTIVE') {
+        <p>They will no longer be able to log in. Their data is kept and you can reactivate the account at any time.</p>
+      } @else {
+        <p>They will be able to log in again.</p>
+      }
+      <div class="modal-actions">
+        <button type="button" (click)="confirm.set(null)">Cancel</button>
+        <button type="button" [class]="c.accountStatus === 'ACTIVE' ? 'danger solid' : 'primary solid'"
+                [disabled]="busy()" (click)="doToggle()">
+          {{ busy() ? 'Saving...' : (c.accountStatus === 'ACTIVE' ? 'Deactivate' : 'Activate') }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

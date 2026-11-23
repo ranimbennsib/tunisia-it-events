@@ -25,6 +25,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/admin/admin').then(m => m.Admin)
   },
   {
+    path: 'admin/users',
+    loadComponent: () => import('./pages/admin-users/admin-users').then(m => m.AdminUsers),
+    canActivate: [roleGuard('ADMIN')]
+  },
+  {
     path: 'my-registrations',
     loadComponent: () =>
       import('./pages/my-registrations/my-registrations').then(m => m.MyRegistrations),
@@ -35,7 +40,7 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/my-payments/my-payments').then(m => m.MyPayments),
     canActivate: [roleGuard('USER')]
   },
-   {
+  {
     path: 'admin/payments',
     loadComponent: () => import('./pages/admin-payments/admin-payments').then(m => m.AdminPayments),
     canActivate: [roleGuard('ADMIN')]

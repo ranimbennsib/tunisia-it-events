@@ -66,7 +66,7 @@ export class Admin {
 
   private msg(err: HttpErrorResponse): string {
     if (err.status === 0) return 'Cannot reach the server.';
-    const api = err.error as { message?: string } | null;
-    return api?.message ?? `Error ${err.status}`;
+    const api = err.error as { message?: string; error?: string } | null;
+    return api?.message ?? api?.error ?? `Error ${err.status}`;
   }
 }
